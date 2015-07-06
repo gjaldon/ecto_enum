@@ -1,0 +1,4 @@
+EctoEnum
+========
+
+** TODO: Add description **

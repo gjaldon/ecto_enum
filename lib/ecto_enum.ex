@@ -1,0 +1,2 @@
+defmodule EctoEnum do
+end
