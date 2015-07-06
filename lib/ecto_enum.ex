@@ -40,6 +40,7 @@ defmodule Ecto.Enum do
           Ecto.Schema.__field__(unquote(mod), enum_field, :string, false, virtual: true)
           before_insert Ecto.Enum, :before_insert, name, enum_field, enum_list
           after_load    Ecto.Enum, :set_enum, name, enum_field, enum_map, enum_list
+          Ecto.Enum.__enums__(name, enum_field, enum_list)
         end
       end
     end
@@ -66,6 +67,18 @@ defmodule Ecto.Enum do
 
       true ->
         changeset
+    end
+  end
+
+  def __enums__(name, enum_field, enum_list) do
+    quote do
+      def __enums__(unquote(name)) do
+        unquote(enum_list)
+      end
+
+      def __enums__(unquote(enum_field)) do
+        unquote(enum_list)
+      end
     end
   end
 end
