@@ -12,24 +12,34 @@ defmodule Ecto.Enum do
     enums  = Module.get_attribute(mod, :enums)
 
     if enums do
-      for {name, enum_map} <- enums do
+      for {name, enum_list} <- enums do
         if fields[name] != :integer do
           raise ArgumentError, "only an `:integer` field can be an enum"
         end
 
+        enum_map =
+          for {field, number} <- enum_list, into: %{} do
+            {number, field}
+          end
+
         helper_fields =
-          for {field, number} <- enum_map do
+          for {field, number} <- enum_list do
             quote do
-              Ecto.Schema.__field__(unquote(mod), :"#{unquote(field)}?",
-                                    :boolean, false, virtual: true)
+              Ecto.Schema.__field__(unquote(mod), unquote(field), :boolean,
+                                    false, virtual: true)
             end
           end
 
         quote do
+          name = unquote(name)
+          enum_field = :"enum_#{name}"
+          enum_list = unquote(enum_list)
+          enum_map  = unquote(enum_map)
+
           unquote(helper_fields)
-          Ecto.Schema.__field__(unquote(mod), :"enum_#{unquote(name)}",
-                                :boolean, false, virtual: true)
-          before_insert Ecto.Enum, :before_insert, unquote(name), unquote(enum_map)
+          Ecto.Schema.__field__(unquote(mod), enum_field, :string, false, virtual: true)
+          before_insert Ecto.Enum, :before_insert, name, enum_field, enum_list
+          after_load    Ecto.Enum, :set_enum, name, enum_field, enum_map, enum_list
         end
       end
     end
@@ -37,15 +47,22 @@ defmodule Ecto.Enum do
 
   import Ecto.changeset
 
-  def before_insert(changeset, enum_field, enum_map) do
-    enum_virtual_field = :"enum_#{enum_field}"
+  def set_enum(model, name, enum_field, enum_map, enum_list) do
+    int = model[name]
+    current_value = enum_map[int]
+    model
+    |> Map.put(enum_field, current_value)
+    |> Map.put(current_value, true)
+  end
+
+  def before_insert(changeset, name, enum_field, enum_list) do
     cond do
-      get_change(changeset, enum_field) ->
+      get_change(changeset, name) ->
         changeset
 
-      get_change(changeset, enum_virtual_field) ->
-        enum_int = enum_map[enum_virtual_field]
-        change(changeset, [{enum_field, enum_int}])
+      get_change(changeset, enum_field) ->
+        enum_int = enum_list[enum_field]
+        change(changeset, [{name, enum_int}])
 
       true ->
         changeset
