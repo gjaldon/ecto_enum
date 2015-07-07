@@ -10,11 +10,7 @@ Application.put_env(:ecto, TestRepo,
 defmodule Ecto.Integration.TestRepo do
   use Ecto.Repo, otp_app: :ecto
 
-  def log(cmd) do
-    super(cmd)
-    on_log = Process.delete(:on_log) || fn -> :ok end
-    on_log.()
-  end
+  def log(_cmd), do: nil
 end
 
 # Load up the repository, start it, and run migrations

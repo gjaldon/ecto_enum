@@ -1,15 +1,19 @@
 defmodule Ecto.Enum do
 
+  import Ecto.Changeset
+
   defmacro __using__(_) do
     quote do
-      @before_compile Ecto.Enum
+      Module.register_attribute(__MODULE__, :ecto_enums, accumulate: true)
+      import unquote(__MODULE__)
+      @before_compile unquote(__MODULE__)
     end
   end
 
   defmacro __before_compile__(env) do
     mod    = env.module
     fields = Module.get_attribute(mod, :changeset_fields)
-    enums  = Module.get_attribute(mod, :enums)
+    enums  = Module.get_attribute(mod, :ecto_enums)
 
     if enums do
       for {name, enum_list} <- enums do
@@ -22,48 +26,62 @@ defmodule Ecto.Enum do
             {number, field}
           end
 
-        helper_fields =
-          for {field, number} <- enum_list do
-            quote do
-              Ecto.Schema.__field__(unquote(mod), unquote(field), :boolean,
-                                    false, virtual: true)
-            end
-          end
-
         quote do
-          name = unquote(name)
+          name       = unquote(name)
           enum_field = :"enum_#{name}"
-          enum_list = unquote(enum_list)
-          enum_map  = unquote(enum_map)
+          enum_list  = unquote(enum_list)
+          enum_map   = unquote(Macro.escape(enum_map))
+          mod        = unquote(mod)
 
-          unquote(helper_fields)
-          Ecto.Schema.__field__(unquote(mod), enum_field, :string, false, virtual: true)
-          before_insert Ecto.Enum, :before_insert, name, enum_field, enum_list
-          after_load    Ecto.Enum, :set_enum, name, enum_field, enum_map, enum_list
-          Ecto.Enum.__enums__(name, enum_field, enum_list)
+          before_insert Ecto.Enum, :on_insert, [name, enum_field, enum_map, enum_list]
+          after_load    Ecto.Enum, :on_load, [name, enum_field, enum_map]
         end
       end
     end
   end
 
-  import Ecto.changeset
+  defmacro enum(field, list) when is_list(list) do
+    helper_fields =
+      for {field, _number} <- list do
+        quote do
+          Ecto.Schema.__field__(__MODULE__, unquote(field), :boolean, false, virtual: true)
+        end
+      end
 
-  def set_enum(model, name, enum_field, enum_map, enum_list) do
-    int = model[name]
+    quote do
+      field      = unquote(field)
+      enum_field = :"enum_#{field}"
+      list       = unquote(list)
+
+      @ecto_enums {field, list}
+      Ecto.Schema.__field__(__MODULE__, field, :integer, false, [])
+      Ecto.Schema.__field__(__MODULE__, enum_field, :string, false, virtual: true)
+      unquote(helper_fields)
+      Module.eval_quoted __ENV__, [Ecto.Enum.__enums__(field, enum_field, list)]
+    end
+  end
+
+  def on_load(model, name, enum_field, enum_map) do
+    int           = Map.get(model, name)
     current_value = enum_map[int]
     model
     |> Map.put(enum_field, current_value)
     |> Map.put(current_value, true)
   end
 
-  def before_insert(changeset, name, enum_field, enum_list) do
+  def on_insert(changeset, name, enum_field, enum_map, enum_list) do
     cond do
-      get_change(changeset, name) ->
+      int = get_change(changeset, name) ->
+        value = enum_map[int]
         changeset
+        |> put_change(enum_field, value)
+        |> put_change(value, true)
 
-      get_change(changeset, enum_field) ->
+      enum_field = get_field(changeset, enum_field) ->
         enum_int = enum_list[enum_field]
-        change(changeset, [{name, enum_int}])
+        changeset
+        |> change([{name, enum_int}])
+        |> put_change(enum_field, true)
 
       true ->
         changeset
