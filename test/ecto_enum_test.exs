@@ -17,15 +17,15 @@ defmodule EctoEnumTest do
     user = TestRepo.insert!(%User{status: 0})
     assert user.status == 0
     assert user.enum_status == :registered
-    assert user.registered
-    refute user.active
-    refute user.inactive
-    refute user.archived
+    assert User.registered?(user)
+    refute User.active?(user)
+    refute User.inactive?(user)
+    refute User.archived?(user)
 
     user = TestRepo.insert!(%User{enum_status: :inactive})
     assert user.status == 2
     assert user.enum_status == :inactive
-    assert user.inactive
+    assert User.inactive?(user)
   end
 
   test "sets enum on load" do
@@ -33,7 +33,7 @@ defmodule EctoEnumTest do
     user = TestRepo.get(User, user.id)
     assert user.status == 1
     assert user.enum_status == :active
-    assert user.active
+    assert User.active?(user)
   end
 
   test "reflections functions" do

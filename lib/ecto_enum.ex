@@ -41,16 +41,23 @@ defmodule Ecto.Enum do
   end
 
   defmacro enum(field, list) when is_list(list) do
+    enum_field = :"enum_#{field}"
+
     helper_fields =
       for {field, _number} <- list do
+        helper_name = :"#{field}?"
+
         quote do
-          Ecto.Schema.__field__(__MODULE__, unquote(field), :boolean, false, virtual: true)
+          def unquote(helper_name)(model) do
+            value = Map.get(model, unquote(enum_field))
+            unquote(field) == value
+          end
         end
       end
 
     quote do
       field      = unquote(field)
-      enum_field = :"enum_#{field}"
+      enum_field = unquote(enum_field)
       list       = unquote(list)
 
       @ecto_enums {field, list}
@@ -75,13 +82,11 @@ defmodule Ecto.Enum do
         value = enum_map[int]
         changeset
         |> put_change(enum_field, value)
-        |> put_change(value, true)
 
       enum_field = get_field(changeset, enum_field) ->
         enum_int = enum_list[enum_field]
         changeset
         |> change([{name, enum_int}])
-        |> put_change(enum_field, true)
 
       true ->
         changeset
@@ -100,12 +105,3 @@ defmodule Ecto.Enum do
     end
   end
 end
-
-
-# @enums status: [draft: 0, published: 1]
-
-# post.enum_status #=> "draft"
-# post.draft? #=> true
-# post.published? #=> false
-# post.status #=> 0
-# Repo.insert(%{post|enum_status: "published"})
