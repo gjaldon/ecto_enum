@@ -47,3 +47,6 @@ defmodule EctoEnumTest do
     assert User.__enums__(:enum_status) == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
 end
+
+# TODO: test for ensuring that integer passed to field is within the provided options
+# TODO: verify that list passed is of the expected format

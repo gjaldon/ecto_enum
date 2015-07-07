@@ -1,7 +1,48 @@
 defmodule Ecto.Enum do
+  @moduledoc """
+  Sets enum field and provides enum helper functions.
+
+  `Ecto.Enum` provides an `enum` macro that is used inside an Ecto model's
+  `schema` block. For example:
+
+      enum :status, [registered: 0, active: 1, inactive: 2, archived: 3]
+
+  ### Enum fields
+
+  `:status` in the above example is an `:integer` field in the model's table.
+  The above declaration will set a `:status` integer field and an `:enum_status`
+  virtual field. Calling `model.status` will return the integer value `1`, `2`
+  or `3`. Invoking `model.enum_status` will return either `:registered`, `:active`,
+  `:inactive` and :`archived`.
+
+  ### Helper functions
+
+  Apart from setting those fields, helper functions will also be defined. For
+  the above example, the followings functions will be available:
+
+      Model.registered?(model)
+      Model.active?(model)
+      Model.inactive?(model)
+      Model.archived?(model)
+
+  ### Reflection function
+
+  Inspecting `enums` in an Ecto model during runtime is possible through the
+  provision of an `__enums__/1` function. With this invoked, you will get the
+  keyword list that represents enum mappings for a given field. For example:
+
+      iex> Model.__enums__(:status)
+      [registered: 0, active: 1, inactive: 2, archived: 3]
+      iex> Model.__enums__(:enum_status)
+      [registered: 0, active: 1, inactive: 2, archived: 3]
+
+  As you notice, it works for both the integer enum field and the virtual
+  enum field.
+  """
 
   import Ecto.Changeset
 
+  @doc false
   defmacro __using__(_) do
     quote do
       Module.register_attribute(__MODULE__, :ecto_enums, accumulate: true)
@@ -10,17 +51,13 @@ defmodule Ecto.Enum do
     end
   end
 
+  @doc false
   defmacro __before_compile__(env) do
-    mod    = env.module
-    fields = Module.get_attribute(mod, :changeset_fields)
-    enums  = Module.get_attribute(mod, :ecto_enums)
+    mod   = env.module
+    enums = Module.get_attribute(mod, :ecto_enums)
 
     if enums do
       for {name, enum_list} <- enums do
-        if fields[name] != :integer do
-          raise ArgumentError, "only an `:integer` field can be an enum"
-        end
-
         enum_map =
           for {field, number} <- enum_list, into: %{} do
             {number, field}
@@ -41,6 +78,13 @@ defmodule Ecto.Enum do
     end
   end
 
+  @doc """
+  Generates enum fields and helper functions.
+
+  This macro is used in a the `Ecto` model's schema block. The field
+  it expects must be an integer. The keyword list passed to it represents
+  the enum mapping. Refer to the moduledoc for more details.
+  """
   defmacro enum(field, list) when is_list(list) do
     enum_field = :"enum_#{field}"
 
@@ -69,14 +113,14 @@ defmodule Ecto.Enum do
     end
   end
 
+  @doc false
   def on_load(model, name, enum_field, enum_map) do
     int           = Map.get(model, name)
     current_value = enum_map[int]
-    model
-    |> Map.put(enum_field, current_value)
-    |> Map.put(current_value, true)
+    Map.put(model, enum_field, current_value)
   end
 
+  @doc false
   def set_enum(changeset, name, enum_field, enum_map, enum_list) do
     cond do
       int = get_change(changeset, name) ->
@@ -94,6 +138,7 @@ defmodule Ecto.Enum do
     end
   end
 
+  @doc false
   def __enums__(name, enum_field, enum_list) do
     quote do
       def __enums__(unquote(name)) do
