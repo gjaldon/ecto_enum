@@ -30,6 +30,7 @@ defmodule EctoEnum.Mixfile do
 
   defp deps do
     [{:ecto, "~> 0.13.1"},
-     {:postgrex, "~> 0.8.3", optional: true}]
+     {:postgrex, "~> 0.8.3", optional: true},
+     {:mariaex, "~> 0.3.0", optional: true}]
   end
 end
