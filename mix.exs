@@ -14,7 +14,7 @@ defmodule EctoEnum.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :postgrex]]
   end
 
   # Dependencies can be Hex packages:
@@ -27,6 +27,7 @@ defmodule EctoEnum.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [{:ecto, "~> 0.13.1"},
+     {:postgrex, "~> 0.8.3", optional: true}]
   end
 end
