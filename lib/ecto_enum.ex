@@ -33,7 +33,8 @@ defmodule Ecto.Enum do
           enum_map   = unquote(Macro.escape(enum_map))
           mod        = unquote(mod)
 
-          before_insert Ecto.Enum, :on_insert, [name, enum_field, enum_map, enum_list]
+          before_insert Ecto.Enum, :set_enum, [name, enum_field, enum_map, enum_list]
+          before_update Ecto.Enum, :set_enum, [name, enum_field, enum_map, enum_list]
           after_load    Ecto.Enum, :on_load, [name, enum_field, enum_map]
         end
       end
@@ -76,7 +77,7 @@ defmodule Ecto.Enum do
     |> Map.put(current_value, true)
   end
 
-  def on_insert(changeset, name, enum_field, enum_map, enum_list) do
+  def set_enum(changeset, name, enum_field, enum_map, enum_list) do
     cond do
       int = get_change(changeset, name) ->
         value = enum_map[int]

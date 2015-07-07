@@ -15,7 +15,6 @@ defmodule EctoEnumTest do
 
   test "sets enum on insert" do
     user = TestRepo.insert!(%User{status: 0})
-    assert user.status == 0
     assert user.enum_status == :registered
     assert User.registered?(user)
     refute User.active?(user)
@@ -28,6 +27,13 @@ defmodule EctoEnumTest do
     assert User.inactive?(user)
   end
 
+  test "sets enum on update" do
+    user = TestRepo.insert!(%User{status: 0})
+    user = TestRepo.update!(%{user|status: 3})
+    assert user.enum_status == :archived
+    assert User.archived?(user)
+  end
+
   test "sets enum on load" do
     user = TestRepo.insert!(%User{enum_status: :active})
     user = TestRepo.get(User, user.id)
@@ -36,7 +42,7 @@ defmodule EctoEnumTest do
     assert User.active?(user)
   end
 
-  test "reflections functions" do
+  test "reflection functions" do
     assert User.__enums__(:status) == [registered: 0, active: 1, inactive: 2, archived: 3]
     assert User.__enums__(:enum_status) == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
