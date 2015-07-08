@@ -6,8 +6,8 @@ defmodule EctoEnumTest do
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
-    use Ecto.Schema
-      use Ecto.Model
+    use StatusEnum
+    use Ecto.Model
 
     schema "users" do
       field :status, StatusEnum
@@ -71,9 +71,8 @@ defmodule EctoEnumTest do
     end
   end
 
-  test "reflection functions" do
+  test "reflection" do
     assert User.__enums__(:status) == [registered: 0, active: 1, inactive: 2, archived: 3]
-    assert User.__enums__(:enum_status) == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
 end
 

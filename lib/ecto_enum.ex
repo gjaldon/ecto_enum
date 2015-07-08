@@ -42,7 +42,7 @@ defmodule Ecto.Enum do
 
   import Ecto.Changeset
 
-  defmacro defenum(module, enum_kw) do
+  defmacro defenum(module, enum_kw) when is_list(enum_kw) do
     enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
     enum_map = Macro.escape(enum_map)
     enum_map_string = for {atom, int} <- enum_kw, into: %{}, do: {Atom.to_string(atom), int}
@@ -61,6 +61,13 @@ defmodule Ecto.Enum do
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
+
+        defmacro __using__(_) do
+          enum_kw = unquote(enum_kw)
+          quote do
+            def __enums__(:status), do: unquote(enum_kw)
+          end
+        end
 
         def type, do: :integer
 
