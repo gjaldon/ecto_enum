@@ -1,37 +1,45 @@
 defmodule EctoEnumTest do
   use ExUnit.Case
 
+  import Ecto.Changeset
+  import Ecto.Enum
+  defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+
   defmodule User do
     use Ecto.Schema
-      use Ecto.Enum
       use Ecto.Model
 
     schema "users" do
-      enum :status, [registered: 0, active: 1, inactive: 2, archived: 3]
+      field :status, StatusEnum
     end
   end
 
   alias Ecto.Integration.TestRepo
 
-  test "sets enum on insert" do
+  test "accepts int, atom and string on save" do
     user = TestRepo.insert!(%User{status: 0})
-    assert user.enum_status == :registered
-    assert User.registered?(user)
-    refute User.active?(user)
-    refute User.inactive?(user)
-    refute User.archived?(user)
+    user = TestRepo.get(User, user.id)
+    assert user.status == :registered
 
-    user = TestRepo.insert!(%User{enum_status: :inactive})
-    assert user.status == 2
-    assert user.enum_status == :inactive
-    assert User.inactive?(user)
+    user = TestRepo.update!(%{user|status: :active})
+    user = TestRepo.get(User, user.id)
+    assert user.status == :active
+
+    user = TestRepo.update!(%{user|status: "Inactive"})
+    user = TestRepo.get(User, user.id)
+    assert user.status == :inactive
+
+    TestRepo.insert!(%User{status: :archived})
+    user = TestRepo.get_by(User, status: :archived)
+    assert user.status == :archived
   end
 
-  test "sets enum on update" do
-    user = TestRepo.insert!(%User{status: 0})
-    user = TestRepo.update!(%{user|status: 3})
-    assert user.enum_status == :archived
-    assert User.archived?(user)
+  test "casts int and binary to atom" do
+    %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
+    assert changes.status == :active
+
+    %{changes: changes} = cast(%User{}, %{"status" => 3}, ~w(status), [])
+    assert changes.status == :archived
   end
 
   test "sets enum on load" do

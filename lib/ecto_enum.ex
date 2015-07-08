@@ -42,6 +42,42 @@ defmodule Ecto.Enum do
 
   import Ecto.Changeset
 
+  defmacro defenum(module, enum_kw) do
+    enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
+    enum_kw_string = for {atom, int} <- enum_kw, do: {Atom.to_string(atom), int}
+
+    quote do
+      defmodule unquote(module) do
+        @behaviour Ecto.Type
+
+        def type, do: :integer
+
+        def cast(atom) when is_atom(atom), do: {:ok, atom}
+        def cast(string) when is_binary(string) do
+          atom = string |> String.downcase() |> String.to_atom()
+          {:ok, atom}
+        end
+        def cast(int) when is_integer(int) do
+          atom = unquote(Macro.escape(enum_map))[int]
+          {:ok, atom}
+        end
+        def cast(_term), do: :error
+
+        def load(int) when is_integer(int) do
+          {:ok, unquote(Macro.escape(enum_map))[int]}
+        end
+
+        def dump(int) when is_integer(int), do: {:ok, int}
+        def dump(atom) when is_atom(atom), do: {:ok, unquote(enum_kw)[atom]}
+        def dump(string) when is_binary(string) do
+          atom = string |> String.downcase() |> String.to_atom()
+          {:ok, unquote(enum_kw)[atom]}
+        end
+        def dump(_), do: :error
+      end
+    end
+  end
+
   @doc false
   defmacro __using__(_) do
     quote do
