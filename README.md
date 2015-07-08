@@ -38,7 +38,7 @@ iex> user = Repo.insert!(%User{status: 0})
 iex> Repo.get(User, user.id).status
 :registered
 
-iex> %{changes: changes} = cast(%User{}, %{"status" => "Active"}, ~w(status), [])
+iex> %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
 iex> changes.status
 :active
 
@@ -50,7 +50,7 @@ Passing a value that the custom Enum type does not recognize will result in an e
 
 ```elixir
 iex> Repo.insert!(%User{status: :none})
-** (Elixir.StatusEnum.Error) :none is not a valid enum value
+** (Elixir.Ecto.Enum.Error) :none is not a valid enum value
 ```
 
 The enum type `StatusEnum` will also have a reflection function for inspecting the

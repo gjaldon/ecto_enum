@@ -24,7 +24,7 @@ defmodule EctoEnumTest do
     user = TestRepo.get(User, user.id)
     assert user.status == :active
 
-    user = TestRepo.update!(%{user|status: "Inactive"})
+    user = TestRepo.update!(%{user|status: "inactive"})
     user = TestRepo.get(User, user.id)
     assert user.status == :inactive
 
@@ -34,7 +34,7 @@ defmodule EctoEnumTest do
   end
 
   test "casts int and binary to atom" do
-    %{changes: changes} = cast(%User{}, %{"status" => "Active"}, ~w(status), [])
+    %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
     assert changes.status == :active
 
     %{changes: changes} = cast(%User{}, %{"status" => 3}, ~w(status), [])
@@ -45,27 +45,27 @@ defmodule EctoEnumTest do
   end
 
   test "raises when input is not in the enum map" do
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
     end
 
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
     end
 
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       cast(%User{}, %{"status" => 4}, ~w(status), [])
     end
 
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       TestRepo.insert!(%User{status: "retroactive"})
     end
 
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       TestRepo.insert!(%User{status: :retroactive})
     end
 
-    assert_raise Elixir.StatusEnum.Error, fn ->
+    assert_raise Elixir.Ecto.Enum.Error, fn ->
       TestRepo.insert!(%User{status: 5})
     end
   end

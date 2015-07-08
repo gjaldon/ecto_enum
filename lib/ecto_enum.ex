@@ -39,7 +39,7 @@ defmodule Ecto.Enum do
   Passing a value that the custom Enum type does not recognize will result in an error.
 
       iex> Repo.insert!(%User{status: :none})
-      ** (Elixir.StatusEnum.Error) :none is not a valid enum value
+      ** (Elixir.Ecto.Enum.Error) :none is not a valid enum value
 
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.
@@ -47,23 +47,23 @@ defmodule Ecto.Enum do
       iex> StatusEnum.__enum_map__(:status)
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
+
+  defmodule Error do
+    defexception [:message]
+
+    def exception(value) do
+      msg = "#{inspect value} is not a valid enum value"
+      %__MODULE__{message: msg}
+    end
+  end
+
   defmacro defenum(module, enum_kw) when is_list(enum_kw) do
     enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
     enum_map = Macro.escape(enum_map)
     enum_map_string = for {atom, int} <- enum_kw, into: %{}, do: {Atom.to_string(atom), int}
     enum_map_string = Macro.escape(enum_map_string)
-    error_mod = Module.concat(elem(module, 2) ++ [Error])
 
     quote do
-      defmodule unquote(error_mod) do
-        defexception [:message]
-
-        def exception(value) do
-          msg = "#{inspect value} is not a valid enum value"
-          %__MODULE__{message: msg}
-        end
-      end
-
       defmodule unquote(module) do
         @behaviour Ecto.Type
 
@@ -75,7 +75,6 @@ defmodule Ecto.Enum do
         end
 
         def cast(string) when is_binary(string) do
-          string = String.downcase(string)
           check_value!(string)
           {:ok, String.to_atom(string)}
         end
@@ -103,7 +102,6 @@ defmodule Ecto.Enum do
         end
 
         def dump(string) when is_binary(string) do
-          string = String.downcase(string)
           check_value!(string)
           {:ok, unquote(enum_map_string)[string]}
         end
@@ -116,19 +114,19 @@ defmodule Ecto.Enum do
 
         defp check_value!(atom) when is_atom(atom) do
           unless unquote(enum_kw)[atom] do
-            raise unquote(error_mod), atom
+            raise Ecto.Enum.Error, atom
           end
         end
 
         defp check_value!(string) when is_binary(string) do
           unless unquote(enum_map_string)[string] do
-            raise unquote(error_mod), string
+            raise Ecto.Enum.Error, string
           end
         end
 
         defp check_value!(int) when is_integer(int) do
           unless unquote(enum_map)[int] do
-            raise unquote(error_mod), int
+            raise Ecto.Enum.Error, int
           end
         end
       end
