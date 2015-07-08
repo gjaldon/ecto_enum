@@ -44,36 +44,85 @@ defmodule Ecto.Enum do
 
   defmacro defenum(module, enum_kw) do
     enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
-    enum_kw_string = for {atom, int} <- enum_kw, do: {Atom.to_string(atom), int}
+    enum_map = Macro.escape(enum_map)
+    enum_map_string = for {atom, int} <- enum_kw, into: %{}, do: {Atom.to_string(atom), int}
+    enum_map_string = Macro.escape(enum_map_string)
+    error_mod = Module.concat(elem(module, 2) ++ [Error])
 
     quote do
+      defmodule unquote(error_mod) do
+        defexception [:message]
+
+        def exception(value) do
+          msg = "#{inspect value} is not a valid enum value"
+          %__MODULE__{message: msg}
+        end
+      end
+
       defmodule unquote(module) do
         @behaviour Ecto.Type
 
         def type, do: :integer
 
-        def cast(atom) when is_atom(atom), do: {:ok, atom}
+        def cast(atom) when is_atom(atom) do
+          check_value!(atom)
+          {:ok, atom}
+        end
+
         def cast(string) when is_binary(string) do
-          atom = string |> String.downcase() |> String.to_atom()
-          {:ok, atom}
+          string = String.downcase(string)
+          check_value!(string)
+          {:ok, String.to_atom(string)}
         end
+
         def cast(int) when is_integer(int) do
-          atom = unquote(Macro.escape(enum_map))[int]
+          check_value!(int)
+          atom = unquote(enum_map)[int]
           {:ok, atom}
         end
+
         def cast(_term), do: :error
 
         def load(int) when is_integer(int) do
-          {:ok, unquote(Macro.escape(enum_map))[int]}
+          {:ok, unquote(enum_map)[int]}
         end
 
-        def dump(int) when is_integer(int), do: {:ok, int}
-        def dump(atom) when is_atom(atom), do: {:ok, unquote(enum_kw)[atom]}
-        def dump(string) when is_binary(string) do
-          atom = string |> String.downcase() |> String.to_atom()
+        def dump(int) when is_integer(int) do
+          check_value!(int)
+          {:ok, int}
+        end
+
+        def dump(atom) when is_atom(atom) do
+          check_value!(atom)
           {:ok, unquote(enum_kw)[atom]}
         end
+
+        def dump(string) when is_binary(string) do
+          string = String.downcase(string)
+          check_value!(string)
+          {:ok, unquote(enum_map_string)[string]}
+        end
+
         def dump(_), do: :error
+
+
+        defp check_value!(atom) when is_atom(atom) do
+          unless unquote(enum_kw)[atom] do
+            raise unquote(error_mod), atom
+          end
+        end
+
+        defp check_value!(string) when is_binary(string) do
+          unless unquote(enum_map_string)[string] do
+            raise unquote(error_mod), string
+          end
+        end
+
+        defp check_value!(int) when is_integer(int) do
+          unless unquote(enum_map)[int] do
+            raise unquote(error_mod), int
+          end
+        end
       end
     end
   end
@@ -103,7 +152,7 @@ defmodule Ecto.Enum do
           name       = unquote(name)
           enum_field = :"enum_#{name}"
           enum_list  = unquote(enum_list)
-          enum_map   = unquote(Macro.escape(enum_map))
+          enum_map   = unquote(enum_map)
           mod        = unquote(mod)
 
           before_insert Ecto.Enum, :set_enum, [name, enum_field, enum_map, enum_list]

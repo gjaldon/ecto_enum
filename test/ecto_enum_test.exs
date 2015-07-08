@@ -35,19 +35,40 @@ defmodule EctoEnumTest do
   end
 
   test "casts int and binary to atom" do
-    %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
+    %{changes: changes} = cast(%User{}, %{"status" => "Active"}, ~w(status), [])
     assert changes.status == :active
 
     %{changes: changes} = cast(%User{}, %{"status" => 3}, ~w(status), [])
     assert changes.status == :archived
+
+    %{changes: changes} = cast(%User{}, %{"status" => :inactive}, ~w(status), [])
+    assert changes.status == :inactive
   end
 
-  test "sets enum on load" do
-    user = TestRepo.insert!(%User{enum_status: :active})
-    user = TestRepo.get(User, user.id)
-    assert user.status == 1
-    assert user.enum_status == :active
-    assert User.active?(user)
+  test "raises when input is not in the enum map" do
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
+    end
+
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
+    end
+
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      cast(%User{}, %{"status" => 4}, ~w(status), [])
+    end
+
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      TestRepo.insert!(%User{status: "retroactive"})
+    end
+
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      TestRepo.insert!(%User{status: :retroactive})
+    end
+
+    assert_raise Elixir.StatusEnum.Error, fn ->
+      TestRepo.insert!(%User{status: 5})
+    end
   end
 
   test "reflection functions" do
@@ -56,5 +77,4 @@ defmodule EctoEnumTest do
   end
 end
 
-# TODO: test for ensuring that integer passed to field is within the provided options
 # TODO: verify that list passed is of the expected format
