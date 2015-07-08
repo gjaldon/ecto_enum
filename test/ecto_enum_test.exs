@@ -6,7 +6,6 @@ defmodule EctoEnumTest do
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
-    use StatusEnum
     use Ecto.Model
 
     schema "users" do
@@ -72,8 +71,8 @@ defmodule EctoEnumTest do
   end
 
   test "reflection" do
-    assert User.__enums__(:status) == [registered: 0, active: 1, inactive: 2, archived: 3]
+    assert StatusEnum.__enum_map__(:status) == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
 end
 
-# TODO: verify that list passed is of the expected format
+# TODO: configure to return either string or atom

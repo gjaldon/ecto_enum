@@ -1,45 +1,52 @@
 defmodule Ecto.Enum do
   @moduledoc """
-  Sets enum field and provides enum helper functions.
-
-  `Ecto.Enum` provides an `enum` macro that is used inside an Ecto model's
-  `schema` block. For example:
-
-      enum :status, [registered: 0, active: 1, inactive: 2, archived: 3]
-
-  ### Enum fields
-
-  `:status` in the above example is an `:integer` field in the model's table.
-  The above declaration will set a `:status` integer field and an `:enum_status`
-  virtual field. Calling `model.status` will return the integer value `1`, `2`
-  or `3`. Invoking `model.enum_status` will return either `:registered`, `:active`,
-  `:inactive` and :`archived`.
-
-  ### Helper functions
-
-  Apart from setting those fields, helper functions will also be defined. For
-  the above example, the followings functions will be available:
-
-      Model.registered?(model)
-      Model.active?(model)
-      Model.inactive?(model)
-      Model.archived?(model)
-
-  ### Reflection function
-
-  Inspecting `enums` in an Ecto model during runtime is possible through the
-  provision of an `__enums__/1` function. With this invoked, you will get the
-  keyword list that represents enum mappings for a given field. For example:
-
-      iex> Model.__enums__(:status)
-      [registered: 0, active: 1, inactive: 2, archived: 3]
-      iex> Model.__enums__(:enum_status)
-      [registered: 0, active: 1, inactive: 2, archived: 3]
-
-  As you notice, it works for both the integer enum field and the virtual
-  enum field.
+  Provides `defenum/2` macro for defining an Enum Ecto type.
   """
 
+  @doc """
+  Defines an enum custom `Ecto.Type`.
+
+  It can be used like any other `Ecto.Type` by passing it to a field in your model's
+  schema block. For example:
+
+      import Ecto.Enum
+      defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+
+      defmodule User do
+        use Ecto.Model
+
+        schema "users" do
+          field :status, StatusEnum
+        end
+      end
+
+  In the above example, the `:status` will behave like an enum and will allow you to
+  pass an `integer`, `atom` or `string` to it. This applies to saving the model,
+  invoking `Ecto.Changeset.cast/4`, or performing a query on the status field. Let's
+  do a few examples:
+
+      iex> user = Repo.insert!(%User{status: 0})
+      iex> Repo.get(User, user.id).status
+      :registered
+
+      iex> %{changes: changes} = cast(%User{}, %{"status" => "Active"}, ~w(status), [])
+      iex> changes.status
+      :active
+
+      iex> from(u in User, where: u.status == :registered) |> Repo.all() |> length
+      1
+
+  Passing a value that the custom Enum type does not recognize will result in an error.
+
+      iex> Repo.insert!(%User{status: :none})
+      ** (Elixir.StatusEnum.Error) :none is not a valid enum value
+
+  The enum type `StatusEnum` will also have a reflection function for inspecting the
+  enum map in runtime.
+
+      iex> StatusEnum.__enum_map__(:status)
+      [registered: 0, active: 1, inactive: 2, archived: 3]
+  """
   defmacro defenum(module, enum_kw) when is_list(enum_kw) do
     enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
     enum_map = Macro.escape(enum_map)
@@ -59,13 +66,6 @@ defmodule Ecto.Enum do
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
-
-        defmacro __using__(_) do
-          enum_kw = unquote(enum_kw)
-          quote do
-            def __enums__(:status), do: unquote(enum_kw)
-          end
-        end
 
         def type, do: :integer
 
@@ -109,6 +109,9 @@ defmodule Ecto.Enum do
         end
 
         def dump(_), do: :error
+
+        # Reflection
+        def __enum_map__(:status), do: unquote(enum_kw)
 
 
         defp check_value!(atom) when is_atom(atom) do

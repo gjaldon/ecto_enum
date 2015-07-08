@@ -5,55 +5,60 @@ EctoEnum is an Ecto extension to support enums in your Ecto models.
 
 ## Usage
 
-Use the `Ecto.Enum` module in your model before using `Ecto.Model` like below:
+First, we will have to define our enum. We can do this in a separate file since defining
+an enum is just defining a module. We do it like:
 
 ```elixir
-defmodule MyApp.User do
-  use Ecto.Enum
+# lib/my_app/ecto_enums.ex
+
+import Ecto.Enum
+defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+```
+
+Once defined, `EctoEnum` can be used like any other `Ecto.Type` by passing it to a field
+in your model's schema block. For example:
+
+```elixir
+defmodule User do
   use Ecto.Model
 
   schema "users" do
-    enum :status, [registered: 0, active: 1, inactive: 2, archived: 3]
+    field :status, StatusEnum
   end
 end
 ```
 
-You declare an enum field by using the `enum/2` macro inside the schema block.
-This macro generates a `status` integer field and an `enum_status` virtual field.
-The `status` field returns an integer while `enum_status` returns an atom such as
-`:register`.
-
-Helper functions are also provided. For the above `MyApp.User` model, we can check
-if the user model is registered by doing `MyApp.User.registered?(user)`. You can
-check for the user's other status in the same way.
-
-Setting `enum_status` for the user model is as good as setting its `status` when
-inserting or updating the model. For example:
+In the above example, the `:status` will behave like an enum and will allow you to
+pass an `integer`, `atom` or `string` to it. This applies to saving the model,
+invoking `Ecto.Changeset.cast/4`, or performing a query on the status field. Let's
+do a few examples:
 
 ```elixir
-iex> user = Repo.insert!(%User{enum_status: :registered})
-iex> user.status
-0
-iex> user = Repo.update!(%{user|enum_status: :active})
-iex> user.status
-2
+iex> user = Repo.insert!(%User{status: 0})
+iex> Repo.get(User, user.id).status
+:registered
+
+iex> %{changes: changes} = cast(%User{}, %{"status" => "Active"}, ~w(status), [])
+iex> changes.status
+:active
+
+iex> from(u in User, where: u.status == :registered) |> Repo.all() |> length
+1
 ```
 
-Inspecting a model's enum field's mapping in runtime is possible by invoking
-`__enums__/1`. It works like:
+Passing a value that the custom Enum type does not recognize will result in an error.
 
 ```elixir
-iex> User.__enums__(:status)
+iex> Repo.insert!(%User{status: :none})
+** (Elixir.StatusEnum.Error) :none is not a valid enum value
+```
+
+The enum type `StatusEnum` will also have a reflection function for inspecting the
+enum map in runtime.
+
+```elixir
+iex> StatusEnum.__enum_map__(:status)
 [registered: 0, active: 1, inactive: 2, archived: 3]
-```
-
-This can be useful for running queries since `Ecto.Repo.Queryable` does not know
-about enums unlike `Ecto.Model`. For example:
-
-```elixir
-iex> registered = User.__enums__(:status)[:registered]
-0
-iex> from(u in User, where: u.status == ^registered)
 ```
 
 ## Important links
