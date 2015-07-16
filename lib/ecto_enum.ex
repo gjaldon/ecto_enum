@@ -69,44 +69,19 @@ defmodule Ecto.Enum do
 
         def type, do: :integer
 
-        def cast(atom) when is_atom(atom) do
-          check_value!(atom)
-          {:ok, atom}
+        def cast(term) do
+          check_value!(term)
+          Ecto.Enum.cast(term, unquote(enum_map))
         end
-
-        def cast(string) when is_binary(string) do
-          check_value!(string)
-          {:ok, String.to_atom(string)}
-        end
-
-        def cast(int) when is_integer(int) do
-          check_value!(int)
-          atom = unquote(enum_map)[int]
-          {:ok, atom}
-        end
-
-        def cast(_term), do: :error
 
         def load(int) when is_integer(int) do
           {:ok, unquote(enum_map)[int]}
         end
 
-        def dump(int) when is_integer(int) do
-          check_value!(int)
-          {:ok, int}
+        def dump(term) do
+          check_value!(term)
+          Ecto.Enum.dump(term, unquote(enum_kw), unquote(enum_map_string))
         end
-
-        def dump(atom) when is_atom(atom) do
-          check_value!(atom)
-          {:ok, unquote(enum_kw)[atom]}
-        end
-
-        def dump(string) when is_binary(string) do
-          check_value!(string)
-          {:ok, unquote(enum_map_string)[string]}
-        end
-
-        def dump(_), do: :error
 
         # Reflection
         def __enum_map__(:status), do: unquote(enum_kw)
@@ -132,4 +107,29 @@ defmodule Ecto.Enum do
       end
     end
   end
+
+  def cast(atom, _enum_map) when is_atom(atom), do: {:ok, atom}
+
+  def cast(string, _enum_map) when is_binary(string), do: {:ok, String.to_atom(string)}
+
+  def cast(int, enum_map) when is_integer(int) do
+    atom = enum_map[int]
+    {:ok, atom}
+  end
+
+  def cast(_term), do: :error
+
+  def dump(int, _enum_kw, _enum_map_string) when is_integer(int) do
+    {:ok, int}
+  end
+
+  def dump(atom, enum_kw, _enum_map_string) when is_atom(atom) do
+    {:ok, enum_kw[atom]}
+  end
+
+  def dump(string, _enum_kw, enum_map_string) when is_binary(string) do
+    {:ok, enum_map_string[string]}
+  end
+
+  def dump(_), do: :error
 end
