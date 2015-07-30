@@ -57,7 +57,7 @@ The enum type `StatusEnum` will also have a reflection function for inspecting t
 enum map in runtime.
 
 ```elixir
-iex> StatusEnum.__enum_map__(:status)
+iex> StatusEnum.__enum_map__()
 [registered: 0, active: 1, inactive: 2, archived: 3]
 ```
 
