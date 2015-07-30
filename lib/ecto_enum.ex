@@ -44,7 +44,7 @@ defmodule Ecto.Enum do
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.
 
-      iex> StatusEnum.__enum_map__(:status)
+      iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
 
@@ -84,7 +84,7 @@ defmodule Ecto.Enum do
         end
 
         # Reflection
-        def __enum_map__(:status), do: unquote(enum_kw)
+        def __enum_map__(), do: unquote(enum_kw)
 
 
         defp check_value!(atom) when is_atom(atom) do

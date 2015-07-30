@@ -71,7 +71,7 @@ defmodule EctoEnumTest do
   end
 
   test "reflection" do
-    assert StatusEnum.__enum_map__(:status) == [registered: 0, active: 1, inactive: 2, archived: 3]
+    assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
 end
 
