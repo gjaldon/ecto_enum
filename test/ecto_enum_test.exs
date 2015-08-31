@@ -2,7 +2,7 @@ defmodule EctoEnumTest do
   use ExUnit.Case
 
   import Ecto.Changeset
-  import Ecto.Enum
+  import EctoEnum
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
@@ -45,27 +45,27 @@ defmodule EctoEnumTest do
   end
 
   test "raises when input is not in the enum map" do
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
     end
 
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
     end
 
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       cast(%User{}, %{"status" => 4}, ~w(status), [])
     end
 
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       TestRepo.insert!(%User{status: "retroactive"})
     end
 
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       TestRepo.insert!(%User{status: :retroactive})
     end
 
-    assert_raise Elixir.Ecto.Enum.Error, fn ->
+    assert_raise Elixir.EctoEnum.Error, fn ->
       TestRepo.insert!(%User{status: 5})
     end
   end

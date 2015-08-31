@@ -11,7 +11,7 @@ an enum is just defining a module. We do it like:
 ```elixir
 # lib/my_app/ecto_enums.ex
 
-import Ecto.Enum
+import EctoEnum
 defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 ```
 
@@ -50,7 +50,7 @@ Passing a value that the custom Enum type does not recognize will result in an e
 
 ```elixir
 iex> Repo.insert!(%User{status: :none})
-** (Elixir.Ecto.Enum.Error) :none is not a valid enum value
+** (Elixir.EctoEnum.Error) :none is not a valid enum value
 ```
 
 The enum type `StatusEnum` will also have a reflection function for inspecting the

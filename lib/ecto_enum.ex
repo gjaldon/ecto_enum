@@ -1,4 +1,4 @@
-defmodule Ecto.Enum do
+defmodule EctoEnum do
   @moduledoc """
   Provides `defenum/2` macro for defining an Enum Ecto type.
   """
@@ -9,7 +9,7 @@ defmodule Ecto.Enum do
   It can be used like any other `Ecto.Type` by passing it to a field in your model's
   schema block. For example:
 
-      import Ecto.Enum
+      import EctoEnum
       defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
       defmodule User do
@@ -39,7 +39,7 @@ defmodule Ecto.Enum do
   Passing a value that the custom Enum type does not recognize will result in an error.
 
       iex> Repo.insert!(%User{status: :none})
-      ** (Elixir.Ecto.Enum.Error) :none is not a valid enum value
+      ** (Elixir.EctoEnum.Error) :none is not a valid enum value
 
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.
@@ -71,7 +71,7 @@ defmodule Ecto.Enum do
 
         def cast(term) do
           check_value!(term)
-          Ecto.Enum.cast(term, unquote(enum_map))
+          EctoEnum.cast(term, unquote(enum_map))
         end
 
         def load(int) when is_integer(int) do
@@ -80,7 +80,7 @@ defmodule Ecto.Enum do
 
         def dump(term) do
           check_value!(term)
-          Ecto.Enum.dump(term, unquote(enum_kw), unquote(enum_map_string))
+          EctoEnum.dump(term, unquote(enum_kw), unquote(enum_map_string))
         end
 
         # Reflection
@@ -89,19 +89,19 @@ defmodule Ecto.Enum do
 
         defp check_value!(atom) when is_atom(atom) do
           unless unquote(enum_kw)[atom] do
-            raise Ecto.Enum.Error, atom
+            raise EctoEnum.Error, atom
           end
         end
 
         defp check_value!(string) when is_binary(string) do
           unless unquote(enum_map_string)[string] do
-            raise Ecto.Enum.Error, string
+            raise EctoEnum.Error, string
           end
         end
 
         defp check_value!(int) when is_integer(int) do
           unless unquote(enum_map)[int] do
-            raise Ecto.Enum.Error, int
+            raise EctoEnum.Error, int
           end
         end
       end
