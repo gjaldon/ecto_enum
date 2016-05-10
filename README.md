@@ -5,7 +5,15 @@ EctoEnum is an Ecto extension to support enums in your Ecto models.
 
 ## Usage
 
-First, we will have to define our enum. We can do this in a separate file since defining
+First, we add `ecto_enum` to `mix.exs`:
+
+```elixir
+def deps do
+  [{:ecto_enum, "~> 0.3.0"}]
+end
+```
+
+We will then have to define our enum. We can do this in a separate file since defining
 an enum is just defining a module. We do it like:
 
 ```elixir
