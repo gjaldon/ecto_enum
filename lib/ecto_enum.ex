@@ -58,49 +58,50 @@ defmodule EctoEnum do
   end
 
   defmacro defenum(module, enum_kw) when is_list(enum_kw) do
-    enum_map = for {atom, int} <- enum_kw, into: %{}, do: {int, atom}
-    enum_map = Macro.escape(enum_map)
-    enum_map_string = for {atom, int} <- enum_kw, into: %{}, do: {Atom.to_string(atom), int}
-    enum_map_string = Macro.escape(enum_map_string)
-
     quote do
+      kw = unquote(enum_kw) |> Macro.escape
+
       defmodule unquote(module) do
         @behaviour Ecto.Type
+
+        @enum_kw kw
+        @enum_map for {atom, int} <- kw, into: %{}, do: {int, atom}
+        @enum_map_string for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
 
         def type, do: :integer
 
         def cast(term) do
           check_value!(term)
-          EctoEnum.cast(term, unquote(enum_map))
+          EctoEnum.cast(term, @enum_map)
         end
 
         def load(int) when is_integer(int) do
-          {:ok, unquote(enum_map)[int]}
+          {:ok, @enum_map[int]}
         end
 
         def dump(term) do
           check_value!(term)
-          EctoEnum.dump(term, unquote(enum_kw), unquote(enum_map_string))
+          EctoEnum.dump(term, @enum_kw, @enum_map_string)
         end
 
         # Reflection
-        def __enum_map__(), do: unquote(enum_kw)
+        def __enum_map__(), do: @enum_kw
 
 
         defp check_value!(atom) when is_atom(atom) do
-          unless unquote(enum_kw)[atom] do
+          unless @enum_kw[atom] do
             raise EctoEnum.Error, atom
           end
         end
 
         defp check_value!(string) when is_binary(string) do
-          unless unquote(enum_map_string)[string] do
+          unless @enum_map_string[string] do
             raise EctoEnum.Error, string
           end
         end
 
         defp check_value!(int) when is_integer(int) do
-          unless unquote(enum_map)[int] do
+          unless @enum_map[int] do
             raise EctoEnum.Error, int
           end
         end

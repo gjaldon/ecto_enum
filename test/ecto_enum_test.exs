@@ -76,6 +76,11 @@ defmodule EctoEnumTest do
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
   end
+
+  test "defenum/2 can accept variables" do
+    x = 0
+    defenum TestEnum, zero: x
+  end
 end
 
 # TODO: configure to return either string or atom
