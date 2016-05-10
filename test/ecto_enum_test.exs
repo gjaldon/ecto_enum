@@ -6,7 +6,7 @@ defmodule EctoEnumTest do
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
-    use Ecto.Model
+    use Ecto.Schema
 
     schema "users" do
       field :status, StatusEnum
@@ -20,11 +20,14 @@ defmodule EctoEnumTest do
     user = TestRepo.get(User, user.id)
     assert user.status == :registered
 
-    user = TestRepo.update!(%{user|status: :active})
-    user = TestRepo.get(User, user.id)
+    user = Ecto.Changeset.change(user, status: :active)
+    user = TestRepo.update! user
     assert user.status == :active
 
-    user = TestRepo.update!(%{user|status: "inactive"})
+    user = Ecto.Changeset.change(user, status: "inactive")
+    user = TestRepo.update! user
+    assert user.status == "inactive"
+
     user = TestRepo.get(User, user.id)
     assert user.status == :inactive
 
