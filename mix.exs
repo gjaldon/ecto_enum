@@ -30,7 +30,7 @@ defmodule EctoEnum.Mixfile do
     [{:ecto, ">= 0.13.1"},
      {:postgrex, ">= 0.8.3", optional: true},
      {:mariaex, ">= 0.3.0", optional: true},
-     {:ex_doc, "~> 0.7", only: :docs},
+     {:ex_doc, "~> 0.10", only: :docs},
      {:earmark, "~> 0.1", only: :docs},
      {:inch_ex, ">= 0.0.0", only: :docs}]
   end
