@@ -13,17 +13,17 @@ def deps do
 end
 ```
 
-We will then have to define our enum. We can do this in a separate file since defining
-an enum is just defining a module. We do it like:
+Create new module using `EctoEnum` and set valid enumerables using `enum/1`.
 
 ```elixir
-# lib/my_app/ecto_enums.ex
-
-import EctoEnum
-defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+# status.ex
+defmodule Status do
+  use EctoEnum
+  enum ~w(registered active inactive archived)
+end
 ```
 
-Once defined, `EctoEnum` can be used like any other `Ecto.Type` by passing it to a field
+Once defined, `Status` can be used like any other `Ecto.Type` by passing it to a field
 in your model's schema block. For example:
 
 ```elixir
@@ -31,7 +31,7 @@ defmodule User do
   use Ecto.Model
 
   schema "users" do
-    field :status, StatusEnum
+    field :status, Status
   end
 end
 ```
@@ -66,7 +66,11 @@ enum map in runtime.
 
 ```elixir
 iex> StatusEnum.__enum_map__()
-[registered: 0, active: 1, inactive: 2, archived: 3]
+["registered", "active", "inactive", "archived"]
+
+iex> StatusEnum.__meta__()
+%{0 => "registered", 1 => "active", 2 => "inactive", 3 => "archived",
+  "active" => 1, "archived" => 3, "inactive" => 2, "registered" => 0}
 ```
 
 ## Important links
