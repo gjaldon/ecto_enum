@@ -91,6 +91,14 @@ defmodule EctoEnum do
       def dump(term) do
         EctoEnum.dump(term, __meta__)
       end
+
+      def to_atom(term) do
+        EctoEnum.to_atom(term, __meta__)
+      end
+
+      def to_integer(term) do
+        EctoEnum.to_integer(term, __meta__)
+      end
     end
   end
 
