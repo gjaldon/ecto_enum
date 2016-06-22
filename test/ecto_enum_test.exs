@@ -1,6 +1,7 @@
 defmodule EctoEnumTest do
   use ExUnit.Case
 
+  import Ecto.Query
   import Ecto.Changeset
   import EctoEnum, only: [defenum: 2]
 
@@ -25,7 +26,26 @@ defmodule EctoEnumTest do
     end
   end
 
+  defmodule CategoriesEnum do
+    use EctoEnum, multiple: true
+
+    enum ~w(science biology modernity)a
+  end
+
+  defmodule Post do
+    use Ecto.Schema
+
+    schema "posts" do
+      field :categories, CategoriesEnum
+    end
+  end
+
   alias Ecto.Integration.TestRepo
+
+  test "types" do
+    assert Ecto.Type.type(StatusEnum    ) == :integer
+    assert Ecto.Type.type(CategoriesEnum) == {:array, :integer}
+  end
 
   test "accepts int, atom and string on save" do
     user = TestRepo.insert!(%User{status: 0})
@@ -46,6 +66,23 @@ defmodule EctoEnumTest do
     TestRepo.insert!(%User{status: :archived})
     user = TestRepo.get_by(User, status: :archived)
     assert user.status == :archived
+  end
+
+  test "accepts list of int, atom and string on save" do
+    post = TestRepo.insert!(%Post{categories: [0, 2]})
+    post = TestRepo.get(Post, post.id)
+    assert post.categories == [:science, :modernity]
+
+    post = Ecto.Changeset.change(post, categories: [:biology])
+    post = TestRepo.update! post
+    assert post.categories == [:biology]
+
+    post = Ecto.Changeset.change(post, categories: [:biology, "science"])
+    post = TestRepo.update!(post)
+    assert post.categories == [:biology, "science"]
+
+    post = TestRepo.get(Post, post.id)
+    assert post.categories == [:biology, :science]
   end
 
   test "casts int and binary to atom" do
@@ -123,12 +160,25 @@ defmodule EctoEnumTest do
     assert EctoEnum.to_integer(:Active    , @valid_enum_map) == :error
   end
 
+  test "should value from list of atom" do
+    assert EctoEnum.to_integer([:registered, :active,   :archived], @valid_enum_map) == [0, 1, 3]
+    assert EctoEnum.to_integer([:_invalid,   :inactive, :archived], @valid_enum_map) == :error
+    assert EctoEnum.to_integer([:Active,     :_invalid, :archived], @valid_enum_map) == :error
+    assert EctoEnum.to_integer([:Active,     :_invalid, :archived], @valid_enum_map) == :error
+  end
+
   test "should atom from integer" do
     assert EctoEnum.to_atom(0, @valid_enum_map) == :registered
     assert EctoEnum.to_atom(1, @valid_enum_map) == :active
     assert EctoEnum.to_atom(2, @valid_enum_map) == :inactive
     assert EctoEnum.to_atom(3, @valid_enum_map) == :archived
     assert EctoEnum.to_atom(4, @valid_enum_map) == :error
+  end
+
+  test "should atom from list of integer" do
+    assert EctoEnum.to_atom([0, 3, 2], @valid_enum_map) == [:registered, :archived, :inactive]
+    assert EctoEnum.to_atom([4, 5, 2], @valid_enum_map) == :error
+    assert EctoEnum.to_atom([0, 4, 2], @valid_enum_map) == :error
   end
 
 end

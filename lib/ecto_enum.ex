@@ -10,7 +10,7 @@ defmodule EctoEnum do
   schema block. For example:
 
       defmodule StatusEnum do
-        use EctoEnum
+        use EctoEnum, multiple: true
         enum ~w(registered active inactive archived)
       end
 
@@ -68,13 +68,17 @@ defmodule EctoEnum do
   end
 
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
+    multiple = Dict.get(opts, :multiple, false)
+
     quote do
       @behaviour Ecto.Type
 
       import EctoEnum
 
-      def type, do: :integer
+      def type do
+        EctoEnum.type(unquote(multiple))
+      end
 
       def cast(term) do
         EctoEnum.cast(term, __meta__)
@@ -89,6 +93,9 @@ defmodule EctoEnum do
       end
     end
   end
+
+  def type(true ), do: {:array, :integer}
+  def type(false), do: :integer
 
   defmacro enum(enums, _opts \\ []) do
     quote do
@@ -110,7 +117,6 @@ defmodule EctoEnum do
       end
     end
   end
-
 
   def cast(term, enum_map) do
     case to_atom(term, enum_map) do
@@ -152,6 +158,21 @@ defmodule EctoEnum do
     end
   end
 
+  def to_integer(list, enum_map) when is_list(list) do
+    list = to_integer(list, [], enum_map)
+    case Enum.any?(list, fn(term) -> term == :error end) do
+      true  -> :error
+      false -> list
+    end
+  end
+
+  def to_integer([], acc, _enum_map), do: acc
+
+  def to_integer([h|t], acc, enum_map) do
+    h = to_integer(h, enum_map)
+    to_integer(t, acc ++ [h], enum_map)
+  end
+
   @doc """
   Fetch name (string or atom) from integer
   Fetch names (list of strings or atoms) from list of integers
@@ -170,6 +191,20 @@ defmodule EctoEnum do
       true -> String.to_atom(value)
       _ -> :error
     end
+  end
+
+  def to_atom(list, enum_map) when is_list(list) do
+    list = to_atom(list, [], enum_map)
+    case Enum.any?(list, fn(term) -> term == :error end) do
+      true  -> :error
+      false -> list
+    end
+  end
+
+  def to_atom([], acc, _enum_map), do: acc
+
+  def to_atom([h|t], acc, enum_map) do
+    to_atom(t, acc ++ [to_atom(h, enum_map)], enum_map)
   end
 
   def enums_to_map([{_, _} | _] = keyword) do
