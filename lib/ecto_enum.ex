@@ -56,6 +56,13 @@ defmodule EctoEnum do
 
       iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
+
+  You may also uses strings as backing storage rather than integers by specifying string
+  values in place of integral ones.
+
+      defenum RoleEnum, user: "user", admin: "admin"
+
+  They expose all of the same functionality as integer backed storage.
   """
 
   defmodule UndeterminableStorageError do
