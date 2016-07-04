@@ -58,6 +58,15 @@ defmodule EctoEnum do
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
 
+  defmodule UndeterminableStorageError do
+    defexception [:message]
+
+    def exception(kw) do
+      msg = "cannot determine storage type for #{inspect kw}"
+      %__MODULE__{message: msg}
+    end
+  end
+
   defmacro defenum(module, type, enum) when is_list(enum) do
     EctoEnum.Postgres.defenum(module, type, enum)
   end
@@ -65,6 +74,11 @@ defmodule EctoEnum do
   defmacro defenum(module, enum) when is_list(enum) do
     quote do
       kw = unquote(enum) |> Macro.escape
+
+      storage = EctoEnum.storage(kw)
+
+      if storage == :indeterminate, do:
+        raise EctoEnum.UndeterminableStorageError, kw
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
@@ -75,7 +89,9 @@ defmodule EctoEnum do
         @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
         @valid_values Keyword.values(@atom_int_kw) ++ Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
 
-        def type, do: :integer
+        @storage storage
+
+        def type, do: @storage
 
         def cast(term) do
           EctoEnum.cast(term, @int_atom_map, @string_atom_map)
