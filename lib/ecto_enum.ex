@@ -101,6 +101,10 @@ defmodule EctoEnum do
           Map.fetch(@int_atom_map, int)
         end
 
+        def load(string) when is_binary(string) do
+          {:ok, String.to_atom(string)}
+        end
+
         def dump(term) do
           case EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
             :error ->
