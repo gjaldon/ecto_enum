@@ -37,6 +37,14 @@ defmodule EctoEnumTest do
     TestRepo.insert!(%User{status: :archived})
     user = TestRepo.get_by(User, status: :archived)
     assert user.status == :archived
+
+    TestRepo.insert!(%User{role: :user})
+    user = TestRepo.get_by(User, role: :user)
+    assert user.role == :user
+
+    TestRepo.insert!(%User{role: "admin"})
+    user = TestRepo.get_by(User, role: "admin")
+    assert user.role == :admin
   end
 
   test "casts int and binary to atom" do
@@ -73,6 +81,24 @@ defmodule EctoEnumTest do
     assert_raise Ecto.ChangeError, custom_error_msg(5), fn ->
       TestRepo.insert!(%User{status: 5})
     end
+
+    assert_raise Elixir.EctoEnum.Error, fn ->
+      TestRepo.insert!(%User{role: 0})
+    end
+
+    assert_raise Elixir.EctoEnum.Error, fn ->
+      TestRepo.insert!(%User{role: :moderator})
+    end
+
+    assert_raise Elixir.EctoEnum.Error, fn ->
+      TestRepo.insert!(%User{role: "moderator"})
+    end
+  end
+
+  test "raises when input is not the right type" do
+    assert_raise Elixir.EctoEnum.Error, fn ->
+      cast(%User{}, %{"role" => 0}, ~w(role), [])
+    end
   end
 
   test "reflection" do
@@ -91,6 +117,12 @@ defmodule EctoEnumTest do
     assert EctoEnum.storage(user: "user", admin: "admin") == :string
     assert EctoEnum.storage(registered: 0, active: 1, inactive: 2, archived: 3) == :integer
     assert EctoEnum.storage(registered: 0, active: 1, inactive: 2, archived: 3, retroactive: "retroactive") == :indeterminate
+  end
+
+  test "raises when storage type is undeterminable" do
+    assert_raise EctoEnum.UndeterminableStorageError, fn ->
+      defenum TestEnum, integer: 0, string: ""
+    end
   end
 
   def custom_error_msg(value) do
