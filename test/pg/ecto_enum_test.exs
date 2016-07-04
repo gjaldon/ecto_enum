@@ -3,12 +3,15 @@ defmodule EctoEnumTest do
 
   import Ecto.Changeset
   import EctoEnum
+
+  defenum RoleEnum, user: "user", admin: "admin"
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
     use Ecto.Schema
 
     schema "users" do
+      field :role, RoleEnum
       field :status, StatusEnum
     end
   end
