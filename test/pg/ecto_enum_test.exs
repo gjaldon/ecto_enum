@@ -84,6 +84,12 @@ defmodule EctoEnumTest do
     defenum TestEnum, zero: x
   end
 
+  test "determines storage type" do
+    assert EctoEnum.storage(user: "user", admin: "admin") == :string
+    assert EctoEnum.storage(registered: 0, active: 1, inactive: 2, archived: 3) == :integer
+    assert EctoEnum.storage(registered: 0, active: 1, inactive: 2, archived: 3, retroactive: "retroactive") == :indeterminate
+  end
+
   def custom_error_msg(value) do
     "`#{inspect value}` is not a valid enum value for `EctoEnumTest.StatusEnum`." <>
     " Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
