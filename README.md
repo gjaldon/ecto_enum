@@ -50,7 +50,7 @@ iex> %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), []
 iex> changes.status
 :active
 
-iex> from(u in User, where: u.status == :registered) |> Repo.all() |> length
+iex> from(u in User, where: u.status == ^:registered) |> Repo.all() |> length
 1
 ```
 
