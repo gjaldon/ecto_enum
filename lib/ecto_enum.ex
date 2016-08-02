@@ -36,10 +36,19 @@ defmodule EctoEnum do
       iex> from(u in User, where: u.status == :registered) |> Repo.all() |> length
       1
 
-  Passing a value that the custom Enum type does not recognize will result in an error.
+  Passing an invalid value to a `Ecto.Changeset.cast/3` will add an error to `changeset.errors`
+  field.
+
+      iex> changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
+      iex> changeset.errors
+      [status: "is invalid"]
+
+  Passing an invalid value directly into a model struct will in an error when calling
+  `Repo` functions.
 
       iex> Repo.insert!(%User{status: :none})
-      ** (Elixir.EctoEnum.Error) :none is not a valid enum value
+      ** (Ecto.ChangeError) value `:none` for `MyApp.User.status` in `insert`
+      does not match type MyApp.MyEnumEnum
 
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.
