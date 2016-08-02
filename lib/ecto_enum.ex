@@ -57,51 +57,51 @@ defmodule EctoEnum do
     end
   end
 
-  defmacro defenum(module, enum_kw) when is_list(enum_kw) do
+  defmacro defenum(module, enum) when is_list(enum) do
     quote do
-      kw = unquote(enum_kw) |> Macro.escape
+      kw = unquote(enum) |> Macro.escape
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
 
-        @enum_kw kw
-        @enum_map for {atom, int} <- kw, into: %{}, do: {int, atom}
-        @enum_map_string for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
+        @atom_int_kw kw
+        @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
+        @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
 
         def type, do: :integer
 
         def cast(term) do
           check_value!(term)
-          EctoEnum.cast(term, @enum_map)
+          EctoEnum.cast(term, @int_atom_map)
         end
 
         def load(int) when is_integer(int) do
-          {:ok, @enum_map[int]}
+          {:ok, @int_atom_map[int]}
         end
 
         def dump(term) do
           check_value!(term)
-          EctoEnum.dump(term, @enum_kw, @enum_map_string)
+          EctoEnum.dump(term, @atom_int_kw, @string_int_map)
         end
 
         # Reflection
-        def __enum_map__(), do: @enum_kw
+        def __enum_map__(), do: @atom_int_kw
 
 
         defp check_value!(atom) when is_atom(atom) do
-          unless @enum_kw[atom] do
+          unless @atom_int_kw[atom] do
             raise EctoEnum.Error, atom
           end
         end
 
         defp check_value!(string) when is_binary(string) do
-          unless @enum_map_string[string] do
+          unless @string_int_map[string] do
             raise EctoEnum.Error, string
           end
         end
 
         defp check_value!(int) when is_integer(int) do
-          unless @enum_map[int] do
+          unless @int_atom_map[int] do
             raise EctoEnum.Error, int
           end
         end
@@ -120,16 +120,18 @@ defmodule EctoEnum do
 
   def cast(_term), do: :error
 
-  def dump(int, _enum_kw, _enum_map_string) when is_integer(int) do
-    {:ok, int}
+  def dump(integer, _int_atom_map, _string_int_map) when is_integer(integer) do
+    {:ok, integer}
   end
 
-  def dump(atom, enum_kw, _enum_map_string) when is_atom(atom) do
-    {:ok, enum_kw[atom]}
+  def dump(atom, atom_int_kw, _string_int_map) when is_atom(atom) do
+    integer = atom_int_kw[atom]
+    {:ok, integer}
   end
 
-  def dump(string, _enum_kw, enum_map_string) when is_binary(string) do
-    {:ok, enum_map_string[string]}
+  def dump(string, _int_atom_map, string_int_map) when is_binary(string) do
+    integer = string_int_map[string]
+    {:ok, integer}
   end
 
   def dump(_), do: :error
