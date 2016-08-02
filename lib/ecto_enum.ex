@@ -80,31 +80,11 @@ defmodule EctoEnum do
         end
 
         def dump(term) do
-          check_value!(term)
-          EctoEnum.dump(term, @atom_int_kw, @string_int_map)
+          EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map)
         end
 
         # Reflection
         def __enum_map__(), do: @atom_int_kw
-
-
-        defp check_value!(atom) when is_atom(atom) do
-          unless @atom_int_kw[atom] do
-            raise EctoEnum.Error, atom
-          end
-        end
-
-        defp check_value!(string) when is_binary(string) do
-          unless @string_int_map[string] do
-            raise EctoEnum.Error, string
-          end
-        end
-
-        defp check_value!(int) when is_integer(int) do
-          unless @int_atom_map[int] do
-            raise EctoEnum.Error, int
-          end
-        end
       end
     end
   end
@@ -118,28 +98,30 @@ defmodule EctoEnum do
     end
   end
   def cast(string, _, string_atom_map) when is_binary(string) do
-    do_cast(string_atom_map[string])
+    error_check(string_atom_map[string])
   end
   def cast(int, int_atom_map, _) when is_integer(int) do
-    do_cast(int_atom_map[int])
+    error_check(int_atom_map[int])
   end
-  def cast(value, _, _), do: :error
+  def cast(_, _, _), do: :error
 
 
-  defp do_cast(nil), do: :error
-  defp do_cast(atom), do: {:ok, atom}
-
-
-  def dump(integer, _int_atom_map, _string_int_map) when is_integer(integer) do
-    {:ok, integer}
+  def dump(integer, _, _, int_atom_map) when is_integer(integer) do
+    if int_atom_map[integer] do
+      {:ok, integer}
+    else
+      :error
+    end
   end
-  def dump(atom, atom_int_kw, _string_int_map) when is_atom(atom) do
-    integer = atom_int_kw[atom]
-    {:ok, integer}
+  def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
+    error_check(atom_int_kw[atom])
   end
-  def dump(string, _int_atom_map, string_int_map) when is_binary(string) do
-    integer = string_int_map[string]
-    {:ok, integer}
+  def dump(string, _, string_int_map, _) when is_binary(string) do
+    error_check(string_int_map[string])
   end
   def dump(_), do: :error
+
+
+  defp error_check(nil), do: :error
+  defp error_check(value), do: {:ok, value}
 end

@@ -59,15 +59,15 @@ defmodule EctoEnumTest do
     changeset = cast(%User{}, %{"status" => 4}, ~w(status), [])
     assert error in changeset.errors
 
-    assert_raise Elixir.EctoEnum.Error, fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: "retroactive"})
     end
 
-    assert_raise Elixir.EctoEnum.Error, fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: :retroactive})
     end
 
-    assert_raise Elixir.EctoEnum.Error, fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: 5})
     end
   end
