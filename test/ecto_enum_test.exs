@@ -48,17 +48,16 @@ defmodule EctoEnumTest do
   end
 
   test "raises when input is not in the enum map" do
-    assert_raise Elixir.EctoEnum.Error, fn ->
-      cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
-    end
+    error = {:status, "is invalid"}
 
-    assert_raise Elixir.EctoEnum.Error, fn ->
-      cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
-    end
+    changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
+    assert error in changeset.errors
 
-    assert_raise Elixir.EctoEnum.Error, fn ->
-      cast(%User{}, %{"status" => 4}, ~w(status), [])
-    end
+    changeset = cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
+    assert error in changeset.errors
+
+    changeset = cast(%User{}, %{"status" => 4}, ~w(status), [])
+    assert error in changeset.errors
 
     assert_raise Elixir.EctoEnum.Error, fn ->
       TestRepo.insert!(%User{status: "retroactive"})

@@ -67,12 +67,12 @@ defmodule EctoEnum do
         @atom_int_kw kw
         @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
         @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
+        @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
 
         def type, do: :integer
 
         def cast(term) do
-          check_value!(term)
-          EctoEnum.cast(term, @int_atom_map)
+          EctoEnum.cast(term, @int_atom_map, @string_atom_map)
         end
 
         def load(int) when is_integer(int) do
@@ -109,30 +109,37 @@ defmodule EctoEnum do
     end
   end
 
-  def cast(atom, _enum_map) when is_atom(atom), do: {:ok, atom}
 
-  def cast(string, _enum_map) when is_binary(string), do: {:ok, String.to_atom(string)}
-
-  def cast(int, enum_map) when is_integer(int) do
-    atom = enum_map[int]
-    {:ok, atom}
+  def cast(atom, int_atom_map, _) when is_atom(atom) do
+    if atom in Map.values(int_atom_map) do
+      {:ok, atom}
+    else
+      :error
+    end
   end
+  def cast(string, _, string_atom_map) when is_binary(string) do
+    do_cast(string_atom_map[string])
+  end
+  def cast(int, int_atom_map, _) when is_integer(int) do
+    do_cast(int_atom_map[int])
+  end
+  def cast(value, _, _), do: :error
 
-  def cast(_term), do: :error
+
+  defp do_cast(nil), do: :error
+  defp do_cast(atom), do: {:ok, atom}
+
 
   def dump(integer, _int_atom_map, _string_int_map) when is_integer(integer) do
     {:ok, integer}
   end
-
   def dump(atom, atom_int_kw, _string_int_map) when is_atom(atom) do
     integer = atom_int_kw[atom]
     {:ok, integer}
   end
-
   def dump(string, _int_atom_map, string_int_map) when is_binary(string) do
     integer = string_int_map[string]
     {:ok, integer}
   end
-
   def dump(_), do: :error
 end
