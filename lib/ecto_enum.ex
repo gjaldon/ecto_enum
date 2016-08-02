@@ -89,7 +89,7 @@ defmodule EctoEnum do
     end
   end
 
-
+  @spec cast(any, map, map) :: {:ok, atom} | :error
   def cast(atom, int_atom_map, _) when is_atom(atom) do
     if atom in Map.values(int_atom_map) do
       {:ok, atom}
@@ -106,6 +106,7 @@ defmodule EctoEnum do
   def cast(_, _, _), do: :error
 
 
+  @spec dump(any, keyword, map, map) :: {:ok, integer} | :error
   def dump(integer, _, _, int_atom_map) when is_integer(integer) do
     if int_atom_map[integer] do
       {:ok, integer}
