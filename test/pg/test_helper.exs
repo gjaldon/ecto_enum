@@ -1,3 +1,4 @@
+Logger.configure(level: :info)
 ExUnit.start()
 
 alias Ecto.Integration.TestRepo
