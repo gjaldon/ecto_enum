@@ -31,3 +31,8 @@ Code.require_file "ecto_migration.exs", __DIR__
 :ok = Ecto.Migrator.up(TestRepo, 0, Ecto.Integration.Migration, log: false)
 Process.flag(:trap_exit, true)
 
+# Clean up after our selves so that successive runs don't break.
+System.at_exit fn
+  0 -> :ok = Ecto.Storage.down(TestRepo)
+  _ -> :ok
+end
