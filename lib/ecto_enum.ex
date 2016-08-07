@@ -68,6 +68,7 @@ defmodule EctoEnum do
         @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
         @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
         @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
+        @valid_values Keyword.values(@atom_int_kw) ++ Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
 
         def type, do: :integer
 
@@ -85,6 +86,7 @@ defmodule EctoEnum do
 
         # Reflection
         def __enum_map__(), do: @atom_int_kw
+        def __valid_values__(), do: @valid_values
       end
     end
   end

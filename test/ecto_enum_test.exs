@@ -74,6 +74,9 @@ defmodule EctoEnumTest do
 
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
+    assert StatusEnum.__valid_values__() == [0, 1, 2, 3,
+      :registered, :active, :inactive, :archived,
+      "active", "archived", "inactive", "registered"]
   end
 
   test "defenum/2 can accept variables" do
