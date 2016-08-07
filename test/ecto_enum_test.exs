@@ -59,15 +59,15 @@ defmodule EctoEnumTest do
     changeset = cast(%User{}, %{"status" => 4}, ~w(status), [])
     assert error in changeset.errors
 
-    assert_raise Ecto.ChangeError, fn ->
+    assert_raise Ecto.ChangeError, custom_error_msg("retroactive"), fn ->
       TestRepo.insert!(%User{status: "retroactive"})
     end
 
-    assert_raise Ecto.ChangeError, fn ->
+    assert_raise Ecto.ChangeError, custom_error_msg(:retroactive), fn ->
       TestRepo.insert!(%User{status: :retroactive})
     end
 
-    assert_raise Ecto.ChangeError, fn ->
+    assert_raise Ecto.ChangeError, custom_error_msg(5), fn ->
       TestRepo.insert!(%User{status: 5})
     end
   end
@@ -82,6 +82,12 @@ defmodule EctoEnumTest do
   test "defenum/2 can accept variables" do
     x = 0
     defenum TestEnum, zero: x
+  end
+
+  def custom_error_msg(value) do
+    "`#{inspect value}` is not a valid enum value for `EctoEnumTest.StatusEnum`." <>
+    " Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
+    " \"active\", \"archived\", \"inactive\", \"registered\"]`"
   end
 end
 

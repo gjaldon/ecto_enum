@@ -81,7 +81,15 @@ defmodule EctoEnum do
         end
 
         def dump(term) do
-          EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map)
+          case EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
+            :error ->
+              msg = "`#{inspect term}` is not a valid enum value for `#{inspect __MODULE__}`. " <>
+                "Valid enum values are `#{inspect __valid_values__}`"
+              raise Ecto.ChangeError,
+                message: msg
+            value ->
+              value
+          end
         end
 
         # Reflection
