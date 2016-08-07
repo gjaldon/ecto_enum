@@ -15,6 +15,10 @@ defmodule EctoEnumTest do
 
   alias Ecto.Integration.TestRepo
 
+  setup do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
+  end
+
   test "accepts int, atom and string on save" do
     user = TestRepo.insert!(%User{status: 0})
     user = TestRepo.get(User, user.id)
