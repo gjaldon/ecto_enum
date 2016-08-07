@@ -2,10 +2,17 @@ ExUnit.start()
 
 alias Ecto.Integration.TestRepo
 
-Application.put_env(:ecto, TestRepo,
-  adapter: Ecto.Adapters.Postgres,
-  url: "ecto://postgres:postgres@localhost/ecto_test",
-  pool: Ecto.Adapters.SQL.Sandbox)
+if Mix.env == :mysql do
+  Application.put_env(:ecto, TestRepo,
+    adapter: Ecto.Adapters.MySQL,
+    url: "ecto://root@localhost/ecto_test",
+    pool: Ecto.Adapters.SQL.Sandbox)
+else
+  Application.put_env(:ecto, TestRepo,
+    adapter: Ecto.Adapters.Postgres,
+    url: "ecto://postgres:postgres@localhost/ecto_test",
+    pool: Ecto.Adapters.SQL.Sandbox)
+end
 
 defmodule Ecto.Integration.TestRepo do
   use Ecto.Repo, otp_app: :ecto
