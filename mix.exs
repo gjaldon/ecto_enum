@@ -9,11 +9,15 @@ defmodule EctoEnum.Mixfile do
      elixir: "~> 1.0",
      deps: deps,
      description: "Ecto extension to support enums in models",
+     test_paths: test_paths(Mix.env),
      package: package,
      name: "EctoEnum",
      docs: [source_ref: "v#{@version}",
             source_url: "https://github.com/gjaldon/ecto_enum"]]
   end
+
+  defp test_paths(:pg), do: ["test/pg"]
+  defp test_paths(_), do: ["test/ecto_enum"]
 
   defp package do
     [contributors: ["Gabriel Jaldon"],
