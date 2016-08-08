@@ -3,7 +3,7 @@ defmodule EctoEnumTest do
 
   import Ecto.Changeset
   import EctoEnum
-  defenum StatusEnum, :status, ~w(registered active inactive archived)
+  defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
   defmodule User do
     use Ecto.Schema

@@ -1,14 +1,14 @@
-defmodule EctoEnumTest do
-  use ExUnit.Case
+defmodule EctoEnum.PostgresTest do
+  use ExUnit.Case, async: false
 
   import Ecto.Changeset
   import EctoEnum
-  defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+  defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
 
   defmodule User do
     use Ecto.Schema
 
-    schema "users" do
+    schema "users_pg" do
       field :status, StatusEnum
     end
   end
@@ -16,7 +16,7 @@ defmodule EctoEnumTest do
   alias Ecto.Integration.TestRepo
 
   test "accepts int, atom and string on save" do
-    user = TestRepo.insert!(%User{status: 0})
+    user = TestRepo.insert!(%User{status: :registered})
     user = TestRepo.get(User, user.id)
     assert user.status == :registered
 
@@ -36,12 +36,12 @@ defmodule EctoEnumTest do
     assert user.status == :archived
   end
 
-  test "casts int and binary to atom" do
+  test "casts binary to atom" do
+    %{errors: errors} = cast(%User{}, %{"status" => 3}, ~w(status), [])
+    assert {:status, "is invalid"} in errors
+
     %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
     assert changes.status == :active
-
-    %{changes: changes} = cast(%User{}, %{"status" => 3}, ~w(status), [])
-    assert changes.status == :archived
 
     %{changes: changes} = cast(%User{}, %{"status" => :inactive}, ~w(status), [])
     assert changes.status == :inactive
@@ -59,34 +59,16 @@ defmodule EctoEnumTest do
     changeset = cast(%User{}, %{"status" => 4}, ~w(status), [])
     assert error in changeset.errors
 
-    assert_raise Ecto.ChangeError, custom_error_msg("retroactive"), fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: "retroactive"})
     end
 
-    assert_raise Ecto.ChangeError, custom_error_msg(:retroactive), fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: :retroactive})
     end
 
-    assert_raise Ecto.ChangeError, custom_error_msg(5), fn ->
+    assert_raise Ecto.ChangeError, fn ->
       TestRepo.insert!(%User{status: 5})
     end
-  end
-
-  test "reflection" do
-    assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
-    assert StatusEnum.__valid_values__() == [0, 1, 2, 3,
-      :registered, :active, :inactive, :archived,
-      "active", "archived", "inactive", "registered"]
-  end
-
-  test "defenum/2 can accept variables" do
-    x = 0
-    defenum TestEnum, zero: x
-  end
-
-  def custom_error_msg(value) do
-    "`#{inspect value}` is not a valid enum value for `EctoEnumTest.StatusEnum`." <>
-    " Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
-    " \"active\", \"archived\", \"inactive\", \"registered\"]`"
   end
 end

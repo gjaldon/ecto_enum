@@ -81,7 +81,7 @@ defmodule EctoEnum do
         end
 
         def load(int) when is_integer(int) do
-          {:ok, @int_atom_map[int]}
+          Map.fetch(@int_atom_map, int)
         end
 
         def dump(term) do
@@ -129,7 +129,7 @@ defmodule EctoEnum do
     end
   end
   def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-    Map.fetch(atom_int_kw, atom)
+    Keyword.fetch(atom_int_kw, atom)
   end
   def dump(string, _, string_int_map, _) when is_binary(string) do
     Map.fetch(string_int_map, string)

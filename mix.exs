@@ -16,8 +16,8 @@ defmodule EctoEnum.Mixfile do
             source_url: "https://github.com/gjaldon/ecto_enum"]]
   end
 
-  defp test_paths(:pg), do: ["test/pg"]
-  defp test_paths(_), do: ["test/ecto_enum"]
+  defp test_paths(:mysql), do: ["test/mysql"]
+  defp test_paths(_), do: ["test/pg"]
 
   defp package do
     [contributors: ["Gabriel Jaldon"],
