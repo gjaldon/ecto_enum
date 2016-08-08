@@ -112,10 +112,10 @@ defmodule EctoEnum do
     end
   end
   def cast(string, _, string_atom_map) when is_binary(string) do
-    error_check(string_atom_map[string])
+    Map.fetch(string_atom_map, string)
   end
   def cast(int, int_atom_map, _) when is_integer(int) do
-    error_check(int_atom_map[int])
+    Map.fetch(int_atom_map, int)
   end
   def cast(_, _, _), do: :error
 
@@ -129,14 +129,10 @@ defmodule EctoEnum do
     end
   end
   def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-    error_check(atom_int_kw[atom])
+    Map.fetch(atom_int_kw, atom)
   end
   def dump(string, _, string_int_map, _) when is_binary(string) do
-    error_check(string_int_map[string])
+    Map.fetch(string_int_map, string)
   end
   def dump(_), do: :error
-
-
-  defp error_check(nil), do: :error
-  defp error_check(value), do: {:ok, value}
 end
