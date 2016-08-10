@@ -90,5 +90,3 @@ defmodule EctoEnumTest do
     " \"active\", \"archived\", \"inactive\", \"registered\"]`"
   end
 end
-
-# TODO: configure to return either string or atom

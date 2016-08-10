@@ -9,7 +9,7 @@ First, we add `ecto_enum` to `mix.exs`:
 
 ```elixir
 def deps do
-  [{:ecto_enum, "~> 0.3.0"}]
+  [{:ecto_enum, "~> 0.4.0"}]
 end
 ```
 
@@ -56,10 +56,7 @@ iex> from(u in User, where: u.status == ^:registered) |> Repo.all() |> length
 
 Passing a value that the custom Enum type does not recognize will result in an error.
 
-```elixir
-iex> Repo.insert!(%User{status: :none})
-** (Elixir.EctoEnum.Error) :none is not a valid enum value
-```
+### Reflection
 
 The enum type `StatusEnum` will also have a reflection function for inspecting the
 enum map in runtime.
@@ -67,7 +64,52 @@ enum map in runtime.
 ```elixir
 iex> StatusEnum.__enum_map__()
 [registered: 0, active: 1, inactive: 2, archived: 3]
+iex> StatusEnum.__valid_values()
+[0, 1, 2, 3, :registered, :active, :inactive, :archived, "active", "archived",
+"inactive", "registered"]
 ```
+
+### Using Postgres's Enum Type
+
+[Enumerated Types in Postgres](https://www.postgresql.org/docs/current/static/datatype-enum.html) are now supported. To use Postgres's Enum Type with EctoEnum, use the `defenum/3` macro
+instead of `defenum/2`. We do it like:
+
+```elixir
+# lib/my_app/ecto_enums.ex
+
+import EctoEnum
+defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
+```
+
+The second argument is the name you want used for the new type you are creating in Postgres.
+Note that `defenum/3` expects a list of atoms(could be strings) instead of a keyword
+list unlike in `defenum/2`. Another notable difference is that you can no longer
+use integers in place of atoms or strings as values in your enum type. Given the
+above code, this means that you can only pass the following values:
+
+```elixir
+[:registered, :active, :inactive, :archived, "registered", "active", "inactive", "archived"]
+```
+
+In your migrations, you can make use of helper functions like:
+
+```elixir
+def up do
+  StatusEnum.create_type
+  create table(:users_pg) do
+    add :status, :status
+  end
+end
+
+def down do
+  StatusEnum.drop_type
+  drop_table(:users_pg)
+end
+```
+
+`create_type/0` and `drop_type/0` are automatically defined for you in
+your custom Enum module.
+
 
 ## Important links
 

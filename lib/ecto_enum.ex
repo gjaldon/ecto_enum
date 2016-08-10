@@ -47,8 +47,9 @@ defmodule EctoEnum do
   `Repo` functions.
 
       iex> Repo.insert!(%User{status: :none})
-      ** (Ecto.ChangeError) value `:none` for `MyApp.User.status` in `insert`
-      does not match type MyApp.MyEnumEnum
+      ** (Ecto.ChangeError) `"none"` is not a valid enum value for `EctoEnumTest.StatusEnum`.
+      Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived, "active",
+      "archived", "inactive", "registered"]`
 
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.
@@ -56,6 +57,10 @@ defmodule EctoEnum do
       iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
+
+  defmacro defenum(module, type, enum) when is_list(enum) do
+    EctoEnum.Postgres.defenum(module, type, enum)
+  end
 
   defmacro defenum(module, enum) when is_list(enum) do
     quote do
@@ -77,7 +82,7 @@ defmodule EctoEnum do
         end
 
         def load(int) when is_integer(int) do
-          {:ok, @int_atom_map[int]}
+          Map.fetch(@int_atom_map, int)
         end
 
         def dump(term) do
@@ -108,10 +113,10 @@ defmodule EctoEnum do
     end
   end
   def cast(string, _, string_atom_map) when is_binary(string) do
-    error_check(string_atom_map[string])
+    Map.fetch(string_atom_map, string)
   end
   def cast(int, int_atom_map, _) when is_integer(int) do
-    error_check(int_atom_map[int])
+    Map.fetch(int_atom_map, int)
   end
   def cast(_, _, _), do: :error
 
@@ -125,14 +130,10 @@ defmodule EctoEnum do
     end
   end
   def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-    error_check(atom_int_kw[atom])
+    Keyword.fetch(atom_int_kw, atom)
   end
   def dump(string, _, string_int_map, _) when is_binary(string) do
-    error_check(string_int_map[string])
+    Map.fetch(string_int_map, string)
   end
   def dump(_), do: :error
-
-
-  defp error_check(nil), do: :error
-  defp error_check(value), do: {:ok, value}
 end
