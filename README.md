@@ -69,6 +69,48 @@ iex> StatusEnum.__valid_values()
 "inactive", "registered"]
 ```
 
+### Using Postgres's Enum Type
+
+[Enumerated Types in Postgres](https://www.postgresql.org/docs/current/static/datatype-enum.html) are now supported. To use Postgres's Enum Type with EctoEnum, use the `defenum/3` macro
+instead of `defenum/2`. We do it like:
+
+```elixir
+# lib/my_app/ecto_enums.ex
+
+import EctoEnum
+defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
+```
+
+The second argument is the name you want used for the new type you are creating in Postgres.
+Note that `defenum/3` expects a list of atoms(could be strings) instead of a keyword
+list unlike in `defenum/2`. Another notable difference is that you can no longer
+use integers in place of atoms or strings as values in your enum type. Given the
+above code, this means that you can only pass the following values:
+
+```elixir
+[:registered, :active, :inactive, :archived, "registered", "active", "inactive", "archived"]
+```
+
+In your migrations, you can make use of helper functions like:
+
+```elixir
+def up do
+  StatusEnum.create_type
+  create table(:users_pg) do
+    add :status, :status
+  end
+end
+
+def down do
+  StatusEnum.drop_type
+  drop_table(:users_pg)
+end
+```
+
+`create_type/0` and `drop_type/0` are automatically defined for you in
+your custom Enum module.
+
+
 ## Important links
 
   * [Documentation](http://hexdocs.pm/ecto_enum)
