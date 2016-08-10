@@ -1,4 +1,5 @@
 defmodule EctoEnum.Postgres do
+  @moduledoc false
 
   def defenum(module, type, list) do
     list = if Enum.all?(list, &is_atom/1) do

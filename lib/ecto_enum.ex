@@ -47,8 +47,9 @@ defmodule EctoEnum do
   `Repo` functions.
 
       iex> Repo.insert!(%User{status: :none})
-      ** (Ecto.ChangeError) value `:none` for `MyApp.User.status` in `insert`
-      does not match type MyApp.MyEnumEnum
+      ** (Ecto.ChangeError) `"none"` is not a valid enum value for `EctoEnumTest.StatusEnum`.
+      Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived, "active",
+      "archived", "inactive", "registered"]`
 
   The enum type `StatusEnum` will also have a reflection function for inspecting the
   enum map in runtime.

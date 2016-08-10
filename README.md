@@ -9,7 +9,7 @@ First, we add `ecto_enum` to `mix.exs`:
 
 ```elixir
 def deps do
-  [{:ecto_enum, "~> 0.3.0"}]
+  [{:ecto_enum, "~> 0.4.0"}]
 end
 ```
 
@@ -56,10 +56,7 @@ iex> from(u in User, where: u.status == ^:registered) |> Repo.all() |> length
 
 Passing a value that the custom Enum type does not recognize will result in an error.
 
-```elixir
-iex> Repo.insert!(%User{status: :none})
-** (Elixir.EctoEnum.Error) :none is not a valid enum value
-```
+### Reflection
 
 The enum type `StatusEnum` will also have a reflection function for inspecting the
 enum map in runtime.
@@ -67,6 +64,9 @@ enum map in runtime.
 ```elixir
 iex> StatusEnum.__enum_map__()
 [registered: 0, active: 1, inactive: 2, archived: 3]
+iex> StatusEnum.__valid_values()
+[0, 1, 2, 3, :registered, :active, :inactive, :archived, "active", "archived",
+"inactive", "registered"]
 ```
 
 ## Important links
