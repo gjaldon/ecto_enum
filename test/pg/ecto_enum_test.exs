@@ -48,7 +48,7 @@ defmodule EctoEnumTest do
   end
 
   test "raises when input is not in the enum map" do
-    error = {:status, "is invalid"}
+    error = {:status, {"is invalid", [type: EctoEnumTest.StatusEnum]}}
 
     changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
     assert error in changeset.errors

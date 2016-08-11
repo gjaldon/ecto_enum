@@ -15,7 +15,7 @@ defmodule EctoEnum.PostgresTest do
 
   alias Ecto.Integration.TestRepo
 
-  test "accepts int, atom and string on save" do
+  test "accepts atom and string on save" do
     user = TestRepo.insert!(%User{status: :registered})
     user = TestRepo.get(User, user.id)
     assert user.status == :registered
@@ -38,7 +38,8 @@ defmodule EctoEnum.PostgresTest do
 
   test "casts binary to atom" do
     %{errors: errors} = cast(%User{}, %{"status" => 3}, ~w(status), [])
-    assert {:status, "is invalid"} in errors
+    error = {:status, {"is invalid", [type: EctoEnum.PostgresTest.StatusEnum]}}
+    assert error in errors
 
     %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
     assert changes.status == :active
@@ -48,7 +49,7 @@ defmodule EctoEnum.PostgresTest do
   end
 
   test "raises when input is not in the enum map" do
-    error = {:status, "is invalid"}
+    error = {:status, {"is invalid", [type: EctoEnum.PostgresTest.StatusEnum]}}
 
     changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
     assert error in changeset.errors
