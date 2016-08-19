@@ -40,7 +40,10 @@ defmodule EctoEnum.Postgres do
         def __valid_values__(), do: @valid_values
 
         def create_type() do
-          types = Enum.join(unquote(list), ", ")
+          types =
+            unquote(list)
+            |> Enum.map(& "'#{&1}'")
+            |> Enum.join(", ")
           sql = "CREATE TYPE #{unquote type} AS ENUM (#{types})"
           Ecto.Migration.execute sql
         end
