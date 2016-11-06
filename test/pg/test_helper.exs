@@ -1,3 +1,4 @@
+Logger.configure(level: :info)
 ExUnit.start()
 
 alias Ecto.Integration.TestRepo
@@ -14,14 +15,15 @@ defmodule Ecto.Integration.TestRepo do
 end
 
 # Load up the repository, start it, and run migrations
-_   = Ecto.Storage.down(TestRepo)
-:ok = Ecto.Storage.up(TestRepo)
+_   = Ecto.Adapters.Postgres.storage_down(TestRepo.config)
+:ok = Ecto.Adapters.Postgres.storage_up(TestRepo.config)
 
 {:ok, pid} = TestRepo.start_link()
 
 Code.require_file "ecto_migration.exs", __DIR__
 
 :ok = Ecto.Migrator.up(TestRepo, 0, Ecto.Integration.Migration, log: false)
+Ecto.Adapters.SQL.Sandbox.mode(TestRepo, :manual)
 Process.flag(:trap_exit, true)
 
 :ok = TestRepo.stop(pid)

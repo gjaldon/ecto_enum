@@ -15,6 +15,10 @@ defmodule EctoEnumTest do
 
   alias Ecto.Integration.TestRepo
 
+  setup do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
+  end
+
   test "accepts int, atom and string on save" do
     user = TestRepo.insert!(%User{status: 0})
     user = TestRepo.get(User, user.id)
@@ -48,7 +52,7 @@ defmodule EctoEnumTest do
   end
 
   test "raises when input is not in the enum map" do
-    error = {:status, "is invalid"}
+    error = {:status, {"is invalid", [type: EctoEnumTest.StatusEnum]}}
 
     changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
     assert error in changeset.errors
