@@ -84,6 +84,9 @@ defmodule EctoEnum do
         def load(int) when is_integer(int) do
           Map.fetch(@int_atom_map, int)
         end
+        def load(str) when is_binary(str) do
+          Map.fetch(@string_atom_map, str)
+        end
 
         def dump(term) do
           case EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
