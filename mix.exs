@@ -31,7 +31,7 @@ defmodule EctoEnum.Mixfile do
   end
 
   defp deps do
-    [{:ecto, "~> 2.0"},
+    [{:ecto, "~> 2.0.5"},
      {:postgrex, "~> 0.12.0", optional: true},
      {:mariaex, "~> 0.7.7", optional: true},
      {:ex_doc, "~> 0.11", only: :dev},
