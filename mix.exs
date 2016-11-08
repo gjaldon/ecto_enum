@@ -20,7 +20,7 @@ defmodule EctoEnum.Mixfile do
   defp test_paths(_), do: ["test/pg"]
 
   defp package do
-    [contributors: ["Gabriel Jaldon"],
+    [maintainers: ["Gabriel Jaldon"],
      licenses: ["MIT"],
      links: %{github: "https://github.com/gjaldon/ecto_enum"},
      files: ~w(mix.exs README.md CHANGELOG.md lib)]
