@@ -36,6 +36,6 @@ defmodule EctoEnum.Mixfile do
      {:mariaex, "~> 0.7.7", optional: true},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, "~> 0.1", only: :dev},
-     {:inch_ex, ">= 0.0.0", only: :dev}]
+     {:inch_ex, ">= 0.0.0", only: [:dev, :test]}]
   end
 end
