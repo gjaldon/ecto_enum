@@ -64,7 +64,7 @@ enum map in runtime.
 ```elixir
 iex> StatusEnum.__enum_map__()
 [registered: 0, active: 1, inactive: 2, archived: 3]
-iex> StatusEnum.__valid_values()
+iex> StatusEnum.__valid_values__()
 [0, 1, 2, 3, :registered, :active, :inactive, :archived, "active", "archived",
 "inactive", "registered"]
 ```
@@ -102,8 +102,8 @@ def up do
 end
 
 def down do
-  StatusEnum.drop_type
   drop_table(:users_pg)
+  StatusEnum.drop_type
 end
 ```
 
