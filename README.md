@@ -1,6 +1,11 @@
 EctoEnum
 ========
 
+[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
+[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
+[![Inline docs](http://inch-ci.org/github/gjaldon/ecto_enum?branch=master&style=flat)](http://inch-ci.org/github/gjaldon/ecto_enum#)
+[![Build Status](https://travis-ci.org/gjaldon/ecto_enum.svg?branch=master)](https://travis-ci.org/gjaldon/ecto_enum)
+
 EctoEnum is an Ecto extension to support enums in your Ecto models.
 
 ## Usage
