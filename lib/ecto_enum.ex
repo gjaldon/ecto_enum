@@ -121,7 +121,7 @@ defmodule EctoEnum do
   def cast(_, _, _), do: :error
 
 
-  @spec dump(any, keyword, map, map) :: {:ok, integer} | :error
+  @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
   def dump(integer, _, _, int_atom_map) when is_integer(integer) do
     if int_atom_map[integer] do
       {:ok, integer}
