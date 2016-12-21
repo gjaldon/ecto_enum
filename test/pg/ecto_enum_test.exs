@@ -1,7 +1,6 @@
 defmodule EctoEnumTest do
   use ExUnit.Case
 
-  import Ecto.Changeset
   import EctoEnum
   defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
@@ -37,26 +36,26 @@ defmodule EctoEnumTest do
   end
 
   test "casts int and binary to atom" do
-    %{changes: changes} = cast(%User{}, %{"status" => "active"}, ~w(status), [])
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
     assert changes.status == :active
 
-    %{changes: changes} = cast(%User{}, %{"status" => 3}, ~w(status), [])
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => 3}, ~w(status))
     assert changes.status == :archived
 
-    %{changes: changes} = cast(%User{}, %{"status" => :inactive}, ~w(status), [])
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
     assert changes.status == :inactive
   end
 
   test "raises when input is not in the enum map" do
-    error = {:status, {"is invalid", [type: EctoEnumTest.StatusEnum]}}
+    error = {:status, {"is invalid", [type: EctoEnumTest.StatusEnum, validation: :cast]}}
 
-    changeset = cast(%User{}, %{"status" => "retroactive"}, ~w(status), [])
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => "retroactive"}, ~w(status))
     assert error in changeset.errors
 
-    changeset = cast(%User{}, %{"status" => :retroactive}, ~w(status), [])
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => :retroactive}, ~w(status))
     assert error in changeset.errors
 
-    changeset = cast(%User{}, %{"status" => 4}, ~w(status), [])
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => 4}, ~w(status))
     assert error in changeset.errors
 
     assert_raise Ecto.ChangeError, custom_error_msg("retroactive"), fn ->
