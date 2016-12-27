@@ -7,10 +7,10 @@ defmodule EctoEnum.Mixfile do
     [app: :ecto_enum,
      version: @version,
      elixir: "~> 1.2",
-     deps: deps,
+     deps: deps(),
      description: "Ecto extension to support enums in models",
      test_paths: test_paths(Mix.env),
-     package: package,
+     package: package(),
      name: "EctoEnum",
      docs: [source_ref: "v#{@version}",
             source_url: "https://github.com/gjaldon/ecto_enum"]]
