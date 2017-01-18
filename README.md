@@ -107,7 +107,7 @@ def up do
 end
 
 def down do
-  drop_table(:users_pg)
+  drop table(:users_pg)
   StatusEnum.drop_type
 end
 ```
