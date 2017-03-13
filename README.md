@@ -117,6 +117,7 @@ your custom Enum module.
 
 ## Important notes/gotchas
 
+### Postgres
 - Keep in mind that `ALTER TYPE ... ADD VALUE` cannot be executed inside a transaction block. This means that running this inside a migration requires you to set to the module attribute `@disable_ddl_transaction` to `true`. For example:
 
 ```elixir
@@ -129,10 +130,10 @@ defmodule MyApp.Repo.Migrations.AddToGenderEnum do
   end
 
   def down do
-    Ecto.Migration.execute "ALTER TYPE gender DROP VALUE 'other'"
   end
 end
 ```
+- Note that there is no easy way to drop an enum value. It is not supported and you must create a new type without the value. [Here](http://stackoverflow.com/questions/25811017/how-to-delete-an-enum-type-in-postgres) are some work-arounds. Best to avoid having to drop an enum value.
 
 ## Important links
 
