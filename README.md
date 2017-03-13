@@ -115,6 +115,24 @@ end
 `create_type/0` and `drop_type/0` are automatically defined for you in
 your custom Enum module.
 
+## Important notes/gotchas
+
+- Keep in mind that `ALTER TYPE ... ADD VALUE` cannot be executed inside a transaction block. This means that running this inside a migration requires you to set to the module attribute `@disable_ddl_transaction` to `true`. For example:
+
+```elixir
+defmodule MyApp.Repo.Migrations.AddToGenderEnum do
+  use Ecto.Migration
+  @disable_ddl_transaction true
+  
+  def up do
+    Ecto.Migration.execute "ALTER TYPE gender ADD VALUE 'other'"
+  end
+
+  def down do
+    Ecto.Migration.execute "ALTER TYPE gender DROP VALUE 'other'"
+  end
+end
+```
 
 ## Important links
 
