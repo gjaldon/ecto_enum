@@ -18,6 +18,20 @@ def deps do
 end
 ```
 
+And also to your application list. This is important if you are going to make releases of your application, since non-linked applications won't be included in the release and EctoEnum won't be available.
+
+```elixir
+def application do
+  [
+    mod: {HelloPhoenix, []},
+    applications: [
+      # Other dependencies...
+      :ecto_enum
+    ]
+  ]
+end
+```
+
 We will then have to define our enum. We can do this in a separate file since defining
 an enum is just defining a module. We do it like:
 
