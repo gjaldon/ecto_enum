@@ -3,7 +3,8 @@ defmodule EctoEnumTest do
 
   import Ecto.Changeset
   import EctoEnum
-  defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+  keywords = [registered: 0, active: 1, inactive: 2, archived: 3]
+  defenum StatusEnum, keywords
 
   defmodule User do
     use Ecto.Schema

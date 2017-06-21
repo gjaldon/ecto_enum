@@ -58,11 +58,11 @@ defmodule EctoEnum do
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
 
-  defmacro defenum(module, type, enum) when is_list(enum) do
+  defmacro defenum(module, type, enum) do
     EctoEnum.Postgres.defenum(module, type, enum)
   end
 
-  defmacro defenum(module, enum) when is_list(enum) do
+  defmacro defenum(module, enum) do
     quote do
       kw = unquote(enum) |> Macro.escape
 
