@@ -4,6 +4,7 @@ elixir:
   - 1.3.0
   - 1.3.3
   - 1.4.0-rc.1
+  - 1.5.1
 # Report documentation coverage to InchCI.
 after_script:
   - mix inch.report
