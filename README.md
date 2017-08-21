@@ -33,7 +33,7 @@ in your model's schema block. For example:
 
 ```elixir
 defmodule User do
-  use Ecto.Model
+  use Ecto.Schema
 
   schema "users" do
     field :status, StatusEnum
