@@ -77,6 +77,15 @@ defmodule EctoEnumTest do
     end
   end
 
+  test "valid_value?" do
+    assert StatusEnum.valid_value?(:registered)
+    assert StatusEnum.valid_value?("registered")
+    assert StatusEnum.valid_value?(0)
+    refute StatusEnum.valid_value?(:bad)
+    refute StatusEnum.valid_value?("bad")
+    refute StatusEnum.valid_value?(-1)
+  end
+
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
     assert StatusEnum.__valid_values__() == [0, 1, 2, 3,
