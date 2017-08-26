@@ -1,8 +1,8 @@
 EctoEnum
 ========
 
-[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
-[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
+[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
+[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
 [![Inline docs](http://inch-ci.org/github/gjaldon/ecto_enum.svg?branch=master)](http://inch-ci.org/github/gjaldon/ecto_enum)
 [![Build Status](https://travis-ci.org/gjaldon/ecto_enum.svg?branch=master)](https://travis-ci.org/gjaldon/ecto_enum)
 
@@ -74,6 +74,15 @@ iex> StatusEnum.__valid_values__()
 "inactive", "registered"]
 ```
 
+There is also a helper function that leverages the `__valid_values__()` reflection called `valid_value?(value)`.
+
+```elixir
+iex> StatusEnum.valid_value?(:registered)
+true
+iex> StatusEnum.valid_value?("invalid")
+false
+```
+
 ### Using Postgres's Enum Type
 
 [Enumerated Types in Postgres](https://www.postgresql.org/docs/current/static/datatype-enum.html) are now supported. To use Postgres's Enum Type with EctoEnum, use the `defenum/3` macro
@@ -124,7 +133,7 @@ your custom Enum module.
 defmodule MyApp.Repo.Migrations.AddToGenderEnum do
   use Ecto.Migration
   @disable_ddl_transaction true
-  
+
   def up do
     Ecto.Migration.execute "ALTER TYPE gender ADD VALUE 'other'"
   end
