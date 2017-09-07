@@ -56,7 +56,25 @@ defmodule EctoEnum do
 
       iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
+
+  You may also use strings as backing storage rather than integers by specifying string
+  values in place of integral ones.
+
+      defenum RoleEnum, user: "string_for_user", admin: "string_for_admin"
+
+  They expose all of the same functionality as integer backed storage.
   """
+
+  defmodule UndeterminableStorageError do
+    defexception [:message]
+
+    def exception(kw) do
+      msg = "You have conflicting data types! EctoEnum can only store using " <>
+            "one type (integers or strings but not both) for the same enum. " <>
+            "Original keyword was #{inspect kw}"
+      %__MODULE__{message: msg}
+    end
+  end
 
   defmacro defenum(module, type, enum) do
     EctoEnum.Postgres.defenum(module, type, enum)
@@ -66,27 +84,33 @@ defmodule EctoEnum do
     quote do
       kw = unquote(enum) |> Macro.escape
 
+      storage = EctoEnum.storage(kw)
+
+      if storage == :indeterminate, do: raise(EctoEnum.UndeterminableStorageError, kw)
+
       defmodule unquote(module) do
         @behaviour Ecto.Type
 
-        @atom_int_kw kw
-        @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
-        @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
-        @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
-        @valid_values Keyword.values(@atom_int_kw) ++ Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
+        @atom_rawval_kw kw
+        @rawval_atom_map for {atom, rawval} <- kw, into: %{}, do: {rawval, atom}
+        @string_rawval_map for {atom, rawval} <- kw, into: %{}, do: {Atom.to_string(atom), rawval}
+        @string_atom_map for {atom, _} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
+        @valid_values Keyword.values(@atom_rawval_kw) ++ Keyword.keys(@atom_rawval_kw) ++ Map.keys(@string_rawval_map)
 
-        def type, do: :integer
+        @storage storage
+
+        def type, do: @storage
 
         def cast(term) do
-          EctoEnum.cast(term, @int_atom_map, @string_atom_map)
+          EctoEnum.cast(term, @rawval_atom_map, @string_atom_map)
         end
 
-        def load(int) when is_integer(int) do
-          Map.fetch(@int_atom_map, int)
+        def load(rawval) do
+          Map.fetch(@rawval_atom_map, rawval)
         end
 
         def dump(term) do
-          case EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
+          case EctoEnum.dump(term, @atom_rawval_kw, @string_rawval_map, @rawval_atom_map) do
             :error ->
               msg = "`#{inspect term}` is not a valid enum value for `#{inspect __MODULE__}`. " <>
                 "Valid enum values are `#{inspect __valid_values__()}`"
@@ -98,42 +122,45 @@ defmodule EctoEnum do
         end
 
         # Reflection
-        def __enum_map__(), do: @atom_int_kw
+        def __enum_map__(), do: @atom_rawval_kw
         def __valid_values__(), do: @valid_values
       end
     end
   end
 
+  def storage(kw) do
+    cond do
+      Enum.all?(kw, &(is_integer(elem(&1, 1)))) -> :integer
+      Enum.all?(kw, &(is_binary(elem(&1, 1)))) -> :string
+      true -> :indeterminate
+    end
+  end
+
   @spec cast(any, map, map) :: {:ok, atom} | :error
-  def cast(atom, int_atom_map, _) when is_atom(atom) do
-    if atom in Map.values(int_atom_map) do
+  def cast(atom, rawval_atom_map, _) when is_atom(atom) do
+    if atom in Map.values(rawval_atom_map) do
       {:ok, atom}
     else
       :error
     end
   end
-  def cast(string, _, string_atom_map) when is_binary(string) do
-    Map.fetch(string_atom_map, string)
-  end
-  def cast(int, int_atom_map, _) when is_integer(int) do
-    Map.fetch(int_atom_map, int)
-  end
-  def cast(_, _, _), do: :error
-
-
-  @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
-  def dump(integer, _, _, int_atom_map) when is_integer(integer) do
-    if int_atom_map[integer] do
-      {:ok, integer}
+  def cast(val, rawval_atom_map, string_atom_map) do
+    if val in Map.keys(rawval_atom_map) do
+      Map.fetch(rawval_atom_map, val)
     else
-      :error
+      Map.fetch(string_atom_map, val)
     end
   end
-  def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-    Keyword.fetch(atom_int_kw, atom)
+
+  @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer | string} | :error
+  def dump(atom, atom_rawval_kw, _, _) when is_atom(atom) do
+    Keyword.fetch(atom_rawval_kw, atom)
   end
-  def dump(string, _, string_int_map, _) when is_binary(string) do
-    Map.fetch(string_int_map, string)
+  def dump(val, _, string_rawval_map, rawval_atom_map) do
+    if val in Map.keys(rawval_atom_map) do
+      {:ok, val}
+    else
+      Map.fetch(string_rawval_map, val)
+    end
   end
-  def dump(_), do: :error
 end
