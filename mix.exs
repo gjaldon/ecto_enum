@@ -31,11 +31,11 @@ defmodule EctoEnum.Mixfile do
   end
 
   defp deps do
-    [{:ecto, "~> 2.2"},
-     {:postgrex, "~> 0.13.0", optional: true},
-     {:mariaex, "~> 0.8.0", optional: true},
-     {:ex_doc, "~> 0.11", only: :dev},
-     {:earmark, "~> 0.1", only: :dev},
+    [{:ecto, ">= 2.0.0"},
+     {:postgrex, ">= 0.0.0", optional: true},
+     {:mariaex, ">= 0.0.0", optional: true},
+     {:ex_doc, "~> 0.13.0", only: [:docs, :dev]},
+     {:earmark, "~> 1.0.1", only: [:docs, :dev]},
      {:inch_ex, ">= 0.0.0", only: [:dev, :test]}]
   end
 end
