@@ -11,6 +11,10 @@ defmodule EctoEnumTest do
     schema "users" do
       field :status, StatusEnum
     end
+
+    def roles do
+      [:admin, :manager, :user]
+    end
   end
 
   alias Ecto.Integration.TestRepo
@@ -82,6 +86,10 @@ defmodule EctoEnumTest do
   test "defenum/2 can accept variables" do
     x = 0
     defenum TestEnum, zero: x
+  end
+
+  test "defenum/3 can accept remote function calls" do
+    defenum TestEnum, :role, User.roles()
   end
 
   def custom_error_msg(value) do
