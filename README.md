@@ -1,8 +1,8 @@
 EctoEnum
 ========
 
-[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
-[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum) 
+[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
+[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
 [![Inline docs](http://inch-ci.org/github/gjaldon/ecto_enum.svg?branch=master)](http://inch-ci.org/github/gjaldon/ecto_enum)
 [![Build Status](https://travis-ci.org/gjaldon/ecto_enum.svg?branch=master)](https://travis-ci.org/gjaldon/ecto_enum)
 
@@ -33,7 +33,7 @@ in your model's schema block. For example:
 
 ```elixir
 defmodule User do
-  use Ecto.Model
+  use Ecto.Schema
 
   schema "users" do
     field :status, StatusEnum
@@ -72,6 +72,15 @@ iex> StatusEnum.__enum_map__()
 iex> StatusEnum.__valid_values__()
 [0, 1, 2, 3, :registered, :active, :inactive, :archived, "active", "archived",
 "inactive", "registered"]
+```
+
+There is also a helper function that leverages the `__valid_values__()` reflection called `valid_value?(value)`.
+
+```elixir
+iex> StatusEnum.valid_value?(:registered)
+true
+iex> StatusEnum.valid_value?("invalid")
+false
 ```
 
 ### Using Postgres's Enum Type
@@ -124,7 +133,7 @@ your custom Enum module.
 defmodule MyApp.Repo.Migrations.AddToGenderEnum do
   use Ecto.Migration
   @disable_ddl_transaction true
-  
+
   def up do
     Ecto.Migration.execute "ALTER TYPE gender ADD VALUE 'other'"
   end

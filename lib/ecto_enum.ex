@@ -13,7 +13,7 @@ defmodule EctoEnum do
       defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
       defmodule User do
-        use Ecto.Model
+        use Ecto.Schema
 
         schema "users" do
           field :status, StatusEnum
@@ -95,6 +95,10 @@ defmodule EctoEnum do
             value ->
               value
           end
+        end
+
+        def valid_value?(value) do
+          Enum.member?(@valid_values, value)
         end
 
         # Reflection
