@@ -78,7 +78,7 @@ defmodule EctoEnum do
         def type, do: :integer
 
         def cast(term) do
-          EctoEnum.cast(term, @int_atom_map, @string_atom_map)
+          EctoEnum.Type.cast(term, @int_atom_map, @string_atom_map)
         end
 
         def load(int) when is_integer(int) do
@@ -86,7 +86,7 @@ defmodule EctoEnum do
         end
 
         def dump(term) do
-          case EctoEnum.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
+          case EctoEnum.Type.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
             :error ->
               msg = "`#{inspect term}` is not a valid enum value for `#{inspect __MODULE__}`. " <>
                 "Valid enum values are `#{inspect __valid_values__()}`"
@@ -108,36 +108,39 @@ defmodule EctoEnum do
     end
   end
 
-  @spec cast(any, map, map) :: {:ok, atom} | :error
-  def cast(atom, int_atom_map, _) when is_atom(atom) do
-    if atom in Map.values(int_atom_map) do
-      {:ok, atom}
-    else
-      :error
+  defmodule Type do
+    @spec cast(any, map, map) :: {:ok, atom} | :error
+    def cast(atom, int_atom_map, _) when is_atom(atom) do
+      if atom in Map.values(int_atom_map) do
+        {:ok, atom}
+      else
+        :error
+      end
     end
-  end
-  def cast(string, _, string_atom_map) when is_binary(string) do
-    Map.fetch(string_atom_map, string)
-  end
-  def cast(int, int_atom_map, _) when is_integer(int) do
-    Map.fetch(int_atom_map, int)
-  end
-  def cast(_, _, _), do: :error
+    def cast(string, _, string_atom_map) when is_binary(string) do
+      Map.fetch(string_atom_map, string)
+    end
+    def cast(int, int_atom_map, _) when is_integer(int) do
+      Map.fetch(int_atom_map, int)
+    end
+    def cast(_, _, _), do: :error
 
 
-  @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
-  def dump(integer, _, _, int_atom_map) when is_integer(integer) do
-    if int_atom_map[integer] do
-      {:ok, integer}
-    else
-      :error
+    @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
+    def dump(integer, _, _, int_atom_map) when is_integer(integer) do
+      if int_atom_map[integer] do
+        {:ok, integer}
+      else
+        :error
+      end
     end
+    def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
+      Keyword.fetch(atom_int_kw, atom)
+    end
+    def dump(string, _, string_int_map, _) when is_binary(string) do
+      Map.fetch(string_int_map, string)
+    end
+    def dump(_), do: :error
   end
-  def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-    Keyword.fetch(atom_int_kw, atom)
-  end
-  def dump(string, _, string_int_map, _) when is_binary(string) do
-    Map.fetch(string_int_map, string)
-  end
-  def dump(_), do: :error
+
 end
