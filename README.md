@@ -18,6 +18,8 @@ def deps do
 end
 ```
 
+Run `mix deps.get` to install `ecto_enum`.
+
 We will then have to define our enum. We can do this in a separate file since defining
 an enum is just defining a module. We do it like:
 
