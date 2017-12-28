@@ -143,4 +143,13 @@ defmodule EctoEnum do
     def dump(_), do: :error
   end
 
+  def validate_enum(changeset, field) do
+    type = changeset.types[field]
+    value = get_field(changeset,field)
+
+    case type.valid_value?(value) do
+      true -> changeset
+      _ -> add_error(changeset, field, "Value #{value} is not member of #{field} enum")
+    end
+  end
 end
