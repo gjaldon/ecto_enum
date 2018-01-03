@@ -83,6 +83,36 @@ defmodule EctoEnumTest do
       "active", "archived", "inactive", "registered"]
   end
 
+  describe "validation inclusion helper" do
+
+    test "returns valid changeset when using valid field value" do
+      changeset = %User{}
+      |> Ecto.Changeset.change(status: :active)
+      |> validate_enum(:status)
+
+      assert changeset.valid?()
+    end
+
+    test "returns defaultlty formated error when status is wrong" do
+      changeset = %User{}
+      |> Ecto.Changeset.change(status: :wrong)
+      |> validate_enum(:status)
+
+      assert %Ecto.Changeset{errors: [status: {"Value wrong is not member of status enum", []}]} = changeset
+      assert !changeset.valid?()
+    end
+
+    test "returns custom formated error when status is wrong" do
+      changeset = %User{}
+      |> Ecto.Changeset.change(status: :wrong)
+      |> validate_enum(:status, fn(field, value) -> "#{field} is not ok, I can't find #{value}" end)
+
+      assert %Ecto.Changeset{errors: [status: {"status is not ok, I can't find wrong", []}]} = changeset
+      assert !changeset.valid?()
+    end
+
+  end
+
   test "defenum/2 can accept variables" do
     x = 0
     defenum TestEnum, zero: x
