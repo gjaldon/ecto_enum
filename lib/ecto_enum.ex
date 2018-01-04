@@ -143,4 +143,14 @@ defmodule EctoEnum do
     def dump(_), do: :error
   end
 
+  @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t) -> String.t)) :: Ecto.Changeset.t
+  def validate_enum(changeset, field, error_formater \\ fn(field, value) -> "Value #{value} is not member of #{field} enum" end) do
+    type = changeset.types[field]
+    value = Ecto.Changeset.get_field(changeset,field)
+
+    case type.valid_value?(value) do
+      true -> changeset
+      _ -> Ecto.Changeset.add_error(changeset, field, error_formater.(field, value))
+    end
+  end
 end
