@@ -88,8 +88,8 @@ defmodule EctoEnum do
         def dump(term) do
           case EctoEnum.Type.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
             :error ->
-              msg = "`#{inspect term}` is not a valid enum value for `#{inspect __MODULE__}`. " <>
-                "Valid enum values are `#{inspect __valid_values__()}`"
+              msg = "Value `#{inspect term}` is not a valid enum for `#{inspect __MODULE__}`. " <>
+                "Valid enums are `#{inspect __valid_values__()}`"
               raise Ecto.ChangeError,
                 message: msg
             value ->
@@ -144,11 +144,11 @@ defmodule EctoEnum do
   end
 
   alias Ecto.Changeset
-  @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t) -> String.t)) :: Ecto.Changeset.t
-  def validate_enum(changeset, field, error_msg \\ &default_error_msg/2) do
+  @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t, list(String.t | integer | atom)) -> String.t)) :: Ecto.Changeset.t
+  def validate_enum(changeset, field, error_msg \\ &default_error_msg/3) do
     Changeset.validate_change(changeset, field, :validate_enum, fn field, value ->
       type = changeset.types[field]
-      error_msg = error_msg.(field, value)
+      error_msg = error_msg.(field, value, type.__valid_values__())
       if type.valid_value?(value) do
         []
       else
@@ -157,7 +157,8 @@ defmodule EctoEnum do
     end)
   end
 
-  defp default_error_msg(field, value) do
-    "Value `#{value}` is not member of #{field} enum"
+  defp default_error_msg(field, value, valid_values) do
+    "Value `#{inspect value}` is not a valid enum for `#{inspect field}` field. " <>
+      "Valid enums are `#{inspect valid_values}`"
   end
 end
