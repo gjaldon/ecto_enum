@@ -143,14 +143,21 @@ defmodule EctoEnum do
     def dump(_), do: :error
   end
 
+  alias Ecto.Changeset
   @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t) -> String.t)) :: Ecto.Changeset.t
-  def validate_enum(changeset, field, error_formater \\ fn(field, value) -> "Value #{value} is not member of #{field} enum" end) do
-    type = changeset.types[field]
-    value = Ecto.Changeset.get_field(changeset,field)
+  def validate_enum(changeset, field, error_msg \\ &default_error_msg/2) do
+    Changeset.validate_change(changeset, field, :validate_enum, fn field, value ->
+      type = changeset.types[field]
+      error_msg = error_msg.(field, value)
+      if type.valid_value?(value) do
+        []
+      else
+        Keyword.put([], field, error_msg)
+      end
+    end)
+  end
 
-    case type.valid_value?(value) do
-      true -> changeset
-      _ -> Ecto.Changeset.add_error(changeset, field, error_formater.(field, value))
-    end
+  defp default_error_msg(field, value) do
+    "Value `#{value}` is not member of #{field} enum"
   end
 end
