@@ -6,3 +6,6 @@ elixir:
 # Report documentation coverage to InchCI.
 after_script:
   - mix inch.report
+script:
+  - mix test
+  - MIX_ENV=mysql mix test
