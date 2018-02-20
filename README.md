@@ -113,7 +113,7 @@ In your migrations, you can make use of helper functions like:
 def up do
   StatusEnum.create_type
   create table(:users_pg) do
-    add :status, :status
+    add :status, StatusEnum.type()
   end
 end
 
@@ -123,8 +123,13 @@ def down do
 end
 ```
 
-`create_type/0` and `drop_type/0` are automatically defined for you in
+`create_type/0`, `type/0` and `drop_type/0` are automatically defined for you in
 your custom Enum module.
+
+You can also create the enum in a different schema:
+```elixir
+defenum StatusEnum, :status, [:registered, :active, :inactive, :archived], schema: "alternative_schema"
+```
 
 ## Important notes/gotchas
 

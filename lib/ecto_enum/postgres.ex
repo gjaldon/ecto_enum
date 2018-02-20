@@ -1,16 +1,14 @@
 defmodule EctoEnum.Postgres do
   @moduledoc false
 
-  def defenum(module, type, list) do
+  def defenum(module, type, list, options) do
     quote do
-      type = unquote(type) |> Macro.escape
       list = unquote(list) |> Macro.escape
       list = if Enum.all?(list, &is_atom/1) do
         list
       else
         Enum.map(list, &String.to_atom/1)
       end
-
       defmodule unquote(module) do
         @behaviour Ecto.Type
         alias EctoEnum.Postgres
@@ -19,8 +17,14 @@ defmodule EctoEnum.Postgres do
         @atom_string_map for atom <- list, into: %{}, do: {atom, Atom.to_string(atom)}
         @string_atom_map for atom <- list, into: %{}, do: {Atom.to_string(atom), atom}
         @valid_values list ++ Map.values(@atom_string_map)
+        @default_schema "public"
 
-        def type, do: unquote(type)
+        def type, do: :"#{schema()}.#{unquote(type)}"
+
+        def schema do
+          Keyword.get(unquote(options), :schema, @default_schema)
+        end
+
 
         def cast(term) do
           Postgres.cast(term, @valid_values, @string_atom_map)
@@ -40,12 +44,12 @@ defmodule EctoEnum.Postgres do
 
         def create_type() do
           types = Enum.map_join(unquote(list), ", ", &"'#{&1}'")
-          sql = "CREATE TYPE #{unquote type} AS ENUM (#{types})"
+          sql = "CREATE TYPE #{type()} AS ENUM (#{types})"
           Ecto.Migration.execute sql
         end
 
         def drop_type() do
-          sql = "DROP TYPE #{unquote type}"
+          sql = "DROP TYPE #{type()}"
           Ecto.Migration.execute sql
         end
       end
