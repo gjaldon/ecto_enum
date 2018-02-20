@@ -1,17 +1,14 @@
 defmodule EctoEnum.Postgres do
   @moduledoc false
 
-  def defenum(module, type, list) do
+  def defenum(module, type, list, options \\ []) do
     quote do
-      type = unquote(type) |> Macro.escape()
-      list = unquote(list) |> Macro.escape()
-
-      list =
-        if Enum.all?(list, &is_atom/1) do
-          list
-        else
-          Enum.map(list, &String.to_atom/1)
-        end
+      list = unquote(list) |> Macro.escape
+      list = if Enum.all?(list, &is_atom/1) do
+        list
+      else
+        Enum.map(list, &String.to_atom/1)
+      end
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
@@ -22,7 +19,14 @@ defmodule EctoEnum.Postgres do
         @string_atom_map for atom <- list, into: %{}, do: {Atom.to_string(atom), atom}
         @valid_values list ++ Map.values(@atom_string_map)
 
-        def type, do: unquote(type)
+        # Schema-related module attributes
+        @default_schema "public"
+        @schema Keyword.get(unquote(options), :schema, @default_schema)
+        @__type__ :"#{@schema}.#{unquote(type)}"
+
+        def type, do: @__type__
+
+        def schema, do: @schema
 
         def cast(term) do
           Postgres.cast(term, @valid_values, @string_atom_map)
@@ -45,9 +49,8 @@ defmodule EctoEnum.Postgres do
         def __valid_values__(), do: @valid_values
 
         @types Enum.map_join(unquote(list), ", ", &"'#{&1}'")
-        @create_sql "CREATE TYPE #{unquote(type)} AS ENUM (#{@types})"
-
-        @drop_sql "DROP TYPE #{unquote(type)}"
+        @create_sql "CREATE TYPE #{@__type__} AS ENUM (#{@types})"
+        @drop_sql "DROP TYPE #{@__type__}"
 
         if function_exported?(Ecto.Migration, :execute, 2) do
           def create_type() do
