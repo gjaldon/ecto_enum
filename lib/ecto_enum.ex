@@ -13,7 +13,7 @@ defmodule EctoEnum do
       defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 
       defmodule User do
-        use Ecto.Model
+        use Ecto.Schema
 
         schema "users" do
           field :status, StatusEnum
@@ -102,7 +102,7 @@ defmodule EctoEnum do
         def type, do: @storage
 
         def cast(term) do
-          EctoEnum.cast(term, @rawval_atom_map, @string_atom_map)
+          EctoEnum.Type.cast(term, @rawval_atom_map, @string_atom_map)
         end
 
         def load(rawval) do
@@ -110,15 +110,19 @@ defmodule EctoEnum do
         end
 
         def dump(term) do
-          case EctoEnum.dump(term, @atom_rawval_kw, @string_rawval_map, @rawval_atom_map) do
+          case EctoEnum.Type.dump(term, @atom_rawval_kw, @string_rawval_map, @rawval_atom_map) do
             :error ->
-              msg = "`#{inspect term}` is not a valid enum value for `#{inspect __MODULE__}`. " <>
-                "Valid enum values are `#{inspect __valid_values__()}`"
+              msg = "Value `#{inspect term}` is not a valid enum for `#{inspect __MODULE__}`. " <>
+                "Valid enums are `#{inspect __valid_values__()}`"
               raise Ecto.ChangeError,
                 message: msg
             value ->
               value
           end
+        end
+
+        def valid_value?(value) do
+          Enum.member?(@valid_values, value)
         end
 
         # Reflection
@@ -136,31 +140,52 @@ defmodule EctoEnum do
     end
   end
 
-  @spec cast(any, map, map) :: {:ok, atom} | :error
-  def cast(atom, rawval_atom_map, _) when is_atom(atom) do
-    if atom in Map.values(rawval_atom_map) do
-      {:ok, atom}
-    else
-      :error
+  defmodule Type do
+    @spec cast(any, map, map) :: {:ok, atom} | :error
+    def cast(atom, rawval_atom_map, _) when is_atom(atom) do
+      if atom in Map.values(rawval_atom_map) do
+        {:ok, atom}
+      else
+        :error
+      end
     end
-  end
-  def cast(val, rawval_atom_map, string_atom_map) do
-    if val in Map.keys(rawval_atom_map) do
-      Map.fetch(rawval_atom_map, val)
-    else
-      Map.fetch(string_atom_map, val)
+    def cast(val, rawval_atom_map, string_atom_map) do
+      if val in Map.keys(rawval_atom_map) do
+        Map.fetch(rawval_atom_map, val)
+      else
+        Map.fetch(string_atom_map, val)
+      end
+    end
+
+    @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer | string} | :error
+    def dump(atom, atom_rawval_kw, _, _) when is_atom(atom) do
+      Keyword.fetch(atom_rawval_kw, atom)
+    end
+    def dump(val, _, string_rawval_map, rawval_atom_map) do
+      if val in Map.keys(rawval_atom_map) do
+        {:ok, val}
+      else
+        Map.fetch(string_rawval_map, val)
+      end
     end
   end
 
-  @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer | string} | :error
-  def dump(atom, atom_rawval_kw, _, _) when is_atom(atom) do
-    Keyword.fetch(atom_rawval_kw, atom)
+  alias Ecto.Changeset
+  @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t, list(String.t | integer | atom)) -> String.t)) :: Ecto.Changeset.t
+  def validate_enum(changeset, field, error_msg \\ &default_error_msg/3) do
+    Changeset.validate_change(changeset, field, :validate_enum, fn field, value ->
+      type = changeset.types[field]
+      error_msg = error_msg.(field, value, type.__valid_values__())
+      if type.valid_value?(value) do
+        []
+      else
+        Keyword.put([], field, error_msg)
+      end
+    end)
   end
-  def dump(val, _, string_rawval_map, rawval_atom_map) do
-    if val in Map.keys(rawval_atom_map) do
-      {:ok, val}
-    else
-      Map.fetch(string_rawval_map, val)
-    end
+
+  defp default_error_msg(field, value, valid_values) do
+    "Value `#{inspect value}` is not a valid enum for `#{inspect field}` field. " <>
+      "Valid enums are `#{inspect valid_values}`"
   end
 end

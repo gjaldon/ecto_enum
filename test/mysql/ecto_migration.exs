@@ -3,8 +3,8 @@ defmodule Ecto.Integration.Migration do
 
   def change do
     create table(:users) do
-      add :role, :string
       add :status, :integer
+      add :type, :string
     end
   end
 end
