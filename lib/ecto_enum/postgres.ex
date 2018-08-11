@@ -38,15 +38,23 @@ defmodule EctoEnum.Postgres do
         def __enum_map__(), do: @atom_list
         def __valid_values__(), do: @valid_values
 
-        def create_type() do
-          types = Enum.map_join(unquote(list), ", ", &"'#{&1}'")
-          sql = "CREATE TYPE #{unquote type} AS ENUM (#{types})"
-          Ecto.Migration.execute sql
+        @types Enum.map_join(unquote(list), ", ", &"'#{&1}'")
+        @create_sql "CREATE TYPE #{unquote type} AS ENUM (#{@types})"
+
+        @drop_sql "DROP TYPE #{unquote type}"
+
+        if function_exported?(Ecto.Migration, :execute, 2) do
+          def create_type() do
+            Ecto.Migration.execute @create_sql, @drop_sql
+          end
+        else
+          def create_type() do
+            Ecto.Migration.execute @create_sql
+          end
         end
 
         def drop_type() do
-          sql = "DROP TYPE #{unquote type}"
-          Ecto.Migration.execute sql
+          Ecto.Migration.execute @drop_sql
         end
       end
     end

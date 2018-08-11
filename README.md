@@ -112,16 +112,11 @@ above code, this means that you can only pass the following values:
 In your migrations, you can make use of helper functions like:
 
 ```elixir
-def up do
+def change do
   StatusEnum.create_type
   create table(:users_pg) do
     add :status, :status
   end
-end
-
-def down do
-  drop table(:users_pg)
-  StatusEnum.drop_type
 end
 ```
 
