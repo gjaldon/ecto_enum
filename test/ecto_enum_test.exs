@@ -9,7 +9,7 @@ defmodule EctoEnumTest do
     use Ecto.Schema
 
     schema "users" do
-      field :status, StatusEnum
+      field(:status, StatusEnum)
     end
 
     def roles do
@@ -25,11 +25,11 @@ defmodule EctoEnumTest do
     assert user.status == :registered
 
     user = Ecto.Changeset.change(user, status: :active)
-    user = TestRepo.update! user
+    user = TestRepo.update!(user)
     assert user.status == :active
 
     user = Ecto.Changeset.change(user, status: "inactive")
-    user = TestRepo.update! user
+    user = TestRepo.update!(user)
     assert user.status == "inactive"
 
     user = TestRepo.get(User, user.id)
@@ -78,42 +78,62 @@ defmodule EctoEnumTest do
 
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
-    assert StatusEnum.__valid_values__() == [0, 1, 2, 3,
-      :registered, :active, :inactive, :archived,
-      "active", "archived", "inactive", "registered"]
+
+    assert StatusEnum.__valid_values__() == [
+             0,
+             1,
+             2,
+             3,
+             :registered,
+             :active,
+             :inactive,
+             :archived,
+             "active",
+             "archived",
+             "inactive",
+             "registered"
+           ]
   end
 
   describe "validate_enum/3" do
-
     test "returns a valid changeset when using a valid field value" do
-      changeset = %User{}
-      |> Ecto.Changeset.change(status: :active)
-      |> validate_enum(:status)
+      changeset =
+        %User{}
+        |> Ecto.Changeset.change(status: :active)
+        |> validate_enum(:status)
 
       assert changeset.valid?()
       assert [status: :validate_enum] == changeset.validations
     end
 
     test "returns default error message when enum is invalid" do
-      changeset = %User{}
-      |> Ecto.Changeset.change(status: :wrong)
-      |> validate_enum(:status)
+      changeset =
+        %User{}
+        |> Ecto.Changeset.change(status: :wrong)
+        |> validate_enum(:status)
 
-      error_msg = "Value `:wrong` is not a valid enum for `:status` field. " <>
-        "Valid enums are `#{inspect changeset.types[:status].__valid_values__()}`"
+      error_msg =
+        "Value `:wrong` is not a valid enum for `:status` field. " <>
+          "Valid enums are `#{inspect(changeset.types[:status].__valid_values__())}`"
+
       assert %Ecto.Changeset{errors: [status: {^error_msg, []}]} = changeset
       assert !changeset.valid?()
     end
 
     test "returns custom error message when enum is invalid" do
-      changeset = %User{}
-      |> Ecto.Changeset.change(status: :wrong)
-      |> validate_enum(:status, fn(field, value, _) -> "`#{inspect field}` is invalid. `#{inspect value}` is an invalid enum" end)
+      changeset =
+        %User{}
+        |> Ecto.Changeset.change(status: :wrong)
+        |> validate_enum(:status, fn field, value, _ ->
+          "`#{inspect(field)}` is invalid. `#{inspect(value)}` is an invalid enum"
+        end)
 
-      assert %Ecto.Changeset{errors: [status: {"`:status` is invalid. `:wrong` is an invalid enum", []}]} = changeset
+      assert %Ecto.Changeset{
+               errors: [status: {"`:status` is invalid. `:wrong` is an invalid enum", []}]
+             } = changeset
+
       assert !changeset.valid?()
     end
-
   end
 
   test "defenum/2 can accept variables" do
@@ -126,8 +146,8 @@ defmodule EctoEnumTest do
   end
 
   def custom_error_msg(value) do
-    "Value `#{inspect value}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
-    " Valid enums are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
-    " \"active\", \"archived\", \"inactive\", \"registered\"]`"
+    "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
+      " Valid enums are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
+      " \"active\", \"archived\", \"inactive\", \"registered\"]`"
   end
 end

@@ -64,7 +64,7 @@ defmodule EctoEnum do
 
   defmacro defenum(module, enum) do
     quote do
-      kw = unquote(enum) |> Macro.escape
+      kw = unquote(enum) |> Macro.escape()
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
@@ -73,7 +73,8 @@ defmodule EctoEnum do
         @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
         @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
         @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
-        @valid_values Keyword.values(@atom_int_kw) ++ Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
+        @valid_values Keyword.values(@atom_int_kw) ++
+                        Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
 
         def type, do: :integer
 
@@ -88,10 +89,13 @@ defmodule EctoEnum do
         def dump(term) do
           case EctoEnum.Type.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
             :error ->
-              msg = "Value `#{inspect term}` is not a valid enum for `#{inspect __MODULE__}`. " <>
-                "Valid enums are `#{inspect __valid_values__()}`"
+              msg =
+                "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
+                  "Valid enums are `#{inspect(__valid_values__())}`"
+
               raise Ecto.ChangeError,
                 message: msg
+
             value ->
               value
           end
@@ -117,14 +121,16 @@ defmodule EctoEnum do
         :error
       end
     end
+
     def cast(string, _, string_atom_map) when is_binary(string) do
       Map.fetch(string_atom_map, string)
     end
+
     def cast(int, int_atom_map, _) when is_integer(int) do
       Map.fetch(int_atom_map, int)
     end
-    def cast(_, _, _), do: :error
 
+    def cast(_, _, _), do: :error
 
     @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
     def dump(integer, _, _, int_atom_map) when is_integer(integer) do
@@ -134,21 +140,30 @@ defmodule EctoEnum do
         :error
       end
     end
+
     def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
       Keyword.fetch(atom_int_kw, atom)
     end
+
     def dump(string, _, string_int_map, _) when is_binary(string) do
       Map.fetch(string_int_map, string)
     end
+
     def dump(_), do: :error
   end
 
   alias Ecto.Changeset
-  @spec validate_enum(Ecto.Changeset.t, atom, ((atom, String.t, list(String.t | integer | atom)) -> String.t)) :: Ecto.Changeset.t
+
+  @spec validate_enum(
+          Ecto.Changeset.t(),
+          atom,
+          (atom, String.t(), list(String.t() | integer | atom) -> String.t())
+        ) :: Ecto.Changeset.t()
   def validate_enum(changeset, field, error_msg \\ &default_error_msg/3) do
     Changeset.validate_change(changeset, field, :validate_enum, fn field, value ->
       type = changeset.types[field]
       error_msg = error_msg.(field, value, type.__valid_values__())
+
       if type.valid_value?(value) do
         []
       else
@@ -158,7 +173,7 @@ defmodule EctoEnum do
   end
 
   defp default_error_msg(field, value, valid_values) do
-    "Value `#{inspect value}` is not a valid enum for `#{inspect field}` field. " <>
-      "Valid enums are `#{inspect valid_values}`"
+    "Value `#{inspect(value)}` is not a valid enum for `#{inspect(field)}` field. " <>
+      "Valid enums are `#{inspect(valid_values)}`"
   end
 end

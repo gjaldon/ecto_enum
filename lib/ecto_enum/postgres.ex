@@ -3,13 +3,15 @@ defmodule EctoEnum.Postgres do
 
   def defenum(module, type, list) do
     quote do
-      type = unquote(type) |> Macro.escape
-      list = unquote(list) |> Macro.escape
-      list = if Enum.all?(list, &is_atom/1) do
-        list
-      else
-        Enum.map(list, &String.to_atom/1)
-      end
+      type = unquote(type) |> Macro.escape()
+      list = unquote(list) |> Macro.escape()
+
+      list =
+        if Enum.all?(list, &is_atom/1) do
+          list
+        else
+          Enum.map(list, &String.to_atom/1)
+        end
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
@@ -43,27 +45,26 @@ defmodule EctoEnum.Postgres do
         def __valid_values__(), do: @valid_values
 
         @types Enum.map_join(unquote(list), ", ", &"'#{&1}'")
-        @create_sql "CREATE TYPE #{unquote type} AS ENUM (#{@types})"
+        @create_sql "CREATE TYPE #{unquote(type)} AS ENUM (#{@types})"
 
-        @drop_sql "DROP TYPE #{unquote type}"
+        @drop_sql "DROP TYPE #{unquote(type)}"
 
         if function_exported?(Ecto.Migration, :execute, 2) do
           def create_type() do
-            Ecto.Migration.execute @create_sql, @drop_sql
+            Ecto.Migration.execute(@create_sql, @drop_sql)
           end
         else
           def create_type() do
-            Ecto.Migration.execute @create_sql
+            Ecto.Migration.execute(@create_sql)
           end
         end
 
         def drop_type() do
-          Ecto.Migration.execute @drop_sql
+          Ecto.Migration.execute(@drop_sql)
         end
       end
     end
   end
-
 
   def cast(atom, valid_values, _) when is_atom(atom) do
     if atom in valid_values do
@@ -72,15 +73,17 @@ defmodule EctoEnum.Postgres do
       :error
     end
   end
+
   def cast(string, _, string_atom_map) when is_binary(string) do
     Map.fetch(string_atom_map, string)
   end
-  def cast(_, _, _), do: :error
 
+  def cast(_, _, _), do: :error
 
   def dump(atom, _, atom_string_map) when is_atom(atom) do
     Map.fetch(atom_string_map, atom)
   end
+
   def dump(string, valid_values, _) when is_binary(string) do
     if string in valid_values do
       {:ok, string}
@@ -88,5 +91,6 @@ defmodule EctoEnum.Postgres do
       :error
     end
   end
+
   def dump(_, _, _), do: :error
 end

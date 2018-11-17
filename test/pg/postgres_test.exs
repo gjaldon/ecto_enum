@@ -8,7 +8,7 @@ defmodule EctoEnum.PostgresTest do
     use Ecto.Schema
 
     schema "users_pg" do
-      field :status, StatusEnum
+      field(:status, StatusEnum)
     end
   end
 
@@ -20,11 +20,11 @@ defmodule EctoEnum.PostgresTest do
     assert user.status == :registered
 
     user = Ecto.Changeset.change(user, status: :active)
-    user = TestRepo.update! user
+    user = TestRepo.update!(user)
     assert user.status == :active
 
     user = Ecto.Changeset.change(user, status: "inactive")
-    user = TestRepo.update! user
+    user = TestRepo.update!(user)
     assert user.status == "inactive"
 
     user = TestRepo.get(User, user.id)
