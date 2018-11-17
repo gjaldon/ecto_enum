@@ -34,6 +34,10 @@ defmodule EctoEnum.Postgres do
           Postgres.dump(term, @valid_values, @atom_string_map)
         end
 
+        def valid_value?(value) do
+          Enum.member?(@valid_values, value)
+        end
+
         # Reflection
         def __enum_map__(), do: @atom_list
         def __valid_values__(), do: @valid_values
