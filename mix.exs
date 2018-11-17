@@ -23,7 +23,7 @@ defmodule EctoEnum.Mixfile do
     [maintainers: ["Gabriel Jaldon"],
      licenses: ["MIT"],
      links: %{github: "https://github.com/gjaldon/ecto_enum"},
-     files: ~w(mix.exs README.md CHANGELOG.md lib)]
+     files: ~w(mix.exs README.md CHANGELOG.md lib .formatter.exs)]
   end
 
   def application do
