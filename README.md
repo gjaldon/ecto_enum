@@ -134,7 +134,7 @@ defmodule MyApp.Repo.Migrations.AddToGenderEnum do
   @disable_ddl_transaction true
 
   def up do
-    Ecto.Migration.execute "ALTER TYPE gender ADD VALUE 'other'"
+    Ecto.Migration.execute "ALTER TYPE gender ADD VALUE IF NOT EXISTS'other'"
   end
 
   def down do
