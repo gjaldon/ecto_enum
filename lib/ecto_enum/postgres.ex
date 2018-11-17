@@ -1,18 +1,50 @@
 defmodule EctoEnum.Postgres do
   @moduledoc false
 
-  def defenum(module, type, list, options \\ []) do
-    quote do
-      list = unquote(list) |> Macro.escape
-      list = if Enum.all?(list, &is_atom/1) do
-        list
+  def defenum(module, type, list, options) do
+    # This will work if the enums are passed as list. If we pass a remote
+    # function, we will not be able to generate the AST
+    {able_to_generate, type_spec} =
+      if is_list(list) do
+        specs =
+          Enum.reduce(list, fn
+            current, nil ->
+              if is_binary(current) do
+                String.to_atom(current)
+              else
+                current
+              end
+
+            new, current ->
+              {
+                :|,
+                [],
+                [new, if(is_binary(current), do: String.to_atom(current), else: current)]
+              }
+          end)
+
+        {true, specs}
       else
-        Enum.map(list, &String.to_atom/1)
+        {false, nil}
       end
+
+    quote do
+      list = unquote(list) |> Macro.escape()
+
+      list =
+        if Enum.all?(list, &is_atom/1) do
+          list
+        else
+          Enum.map(list, &String.to_atom/1)
+        end
 
       defmodule unquote(module) do
         @behaviour Ecto.Type
         alias EctoEnum.Postgres
+
+        if(unquote(able_to_generate)) do
+          @type t :: unquote(type_spec)
+        end
 
         @atom_list list
         @atom_string_map for atom <- list, into: %{}, do: {atom, Atom.to_string(atom)}
