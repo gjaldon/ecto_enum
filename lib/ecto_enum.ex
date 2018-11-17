@@ -58,8 +58,8 @@ defmodule EctoEnum do
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
 
-  defmacro defenum(module, type, enum) do
-    EctoEnum.Postgres.defenum(module, type, enum)
+  defmacro defenum(module, type, enum, options \\ []) do
+    EctoEnum.Postgres.defenum(module, type, enum, options)
   end
 
   defmacro defenum(module, enum) do
