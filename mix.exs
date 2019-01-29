@@ -38,8 +38,8 @@ defmodule EctoEnum.Mixfile do
       {:ecto, ">= 2.0.0"},
       {:postgrex, ">= 0.0.0", optional: true},
       {:mariaex, ">= 0.0.0", optional: true},
-      {:ex_doc, "~> 0.13.0", only: [:docs, :dev]},
-      {:earmark, "~> 1.0.1", only: [:docs, :dev]},
+      {:ex_doc, "~> 0.19", only: [:docs, :dev]},
+      {:earmark, "~> 1.2", only: [:docs, :dev]},
       {:inch_ex, ">= 0.0.0", only: [:dev, :test]}
     ]
   end
