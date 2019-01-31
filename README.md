@@ -15,7 +15,7 @@ First, we add `ecto_enum` to `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ecto_enum, "~> 1.0"}
+    {:ecto_enum, "~> 1.2"}
   ]
 end
 ```
@@ -99,7 +99,7 @@ import EctoEnum
 defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
 ```
 
-The second argument is the name you want used for the new type you are creating in Postgres.
+The second argument is the name you want to use for the new type you are creating in Postgres.
 Note that `defenum/3` expects a list of atoms(could be strings) instead of a keyword
 list unlike in `defenum/2`. Another notable difference is that you can no longer
 use integers in place of atoms or strings as values in your enum type. Given the
