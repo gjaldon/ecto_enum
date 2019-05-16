@@ -68,7 +68,7 @@ Passing a value that the custom Enum type does not recognize will result in an e
 ### Reflection
 
 The enum type `StatusEnum` will also have a reflection function for inspecting the
-enum map in runtime.
+enum map at runtime.
 
 ```elixir
 iex> StatusEnum.__enum_map__()
