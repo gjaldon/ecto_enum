@@ -14,7 +14,16 @@ defmodule EctoEnum.Use do
       string_keys = Enum.map(keys, &Atom.to_string/1)
       @valid_values keys ++ string_keys ++ Keyword.values(opts)
 
-      def type, do: :integer
+      type =
+        if opts |> hd() |> is_integer() do
+          :integer
+        else
+          :string
+        end
+
+      @__type__ type
+
+      def type, do: @__type__
 
       def valid_value?(value) do
         Enum.member?(@valid_values, value)

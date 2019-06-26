@@ -151,6 +151,60 @@ defmodule EctoEnumTest do
     defenum TestEnum, :role, User.roles()
   end
 
+  keywords = [
+    registered: "registered",
+    active: "active",
+    inactive: "inactive",
+    archived: "archived"
+  ]
+
+  defenum StringStatusEnum, keywords
+
+  defmodule Account do
+    use Ecto.Schema
+
+    schema "accounts" do
+      field(:status, StringStatusEnum)
+    end
+
+    def roles do
+      [:admin, :manager, :user]
+    end
+  end
+
+  test "string-backed enum accepts int, atom and string on save" do
+    user = TestRepo.insert!(%Account{status: "registered"})
+    user = TestRepo.get(Account, user.id)
+    assert user.status == :registered
+
+    user = Ecto.Changeset.change(user, status: :active)
+    user = TestRepo.update!(user)
+    assert user.status == :active
+
+    user = Ecto.Changeset.change(user, status: "inactive")
+    user = TestRepo.update!(user)
+    assert user.status == "inactive"
+
+    user = TestRepo.get(Account, user.id)
+    assert user.status == :inactive
+
+    TestRepo.insert!(%Account{status: :archived})
+    user = TestRepo.get_by(Account, status: :archived)
+    assert user.status == :archived
+  end
+
+  test "string-backed enum casts string and atom to atom" do
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
+    assert changes.status == :active
+
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
+    assert changes.status == :inactive
+  end
+
+  test "string-backed enum's type is string" do
+    assert StringStatusEnum.type() == :string
+  end
+
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
