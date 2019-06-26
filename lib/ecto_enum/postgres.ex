@@ -3,12 +3,14 @@ defmodule EctoEnum.Postgres do
 
   def defenum(module, type, list, options \\ []) do
     quote do
-      list = unquote(list) |> Macro.escape
-      list = if Enum.all?(list, &is_atom/1) do
-        list
-      else
-        Enum.map(list, &String.to_atom/1)
-      end
+      list = unquote(list) |> Macro.escape()
+
+      list =
+        if Enum.all?(list, &is_atom/1) do
+          list
+        else
+          Enum.map(list, &String.to_atom/1)
+        end
 
       defmodule unquote(module) do
         @behaviour Ecto.Type

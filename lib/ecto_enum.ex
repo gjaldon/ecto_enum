@@ -64,92 +64,10 @@ defmodule EctoEnum do
 
   defmacro defenum(module, enum) do
     quote do
-      kw = unquote(enum) |> Macro.escape()
-
       defmodule unquote(module) do
-        @behaviour Ecto.Type
-
-        @atom_int_kw kw
-        @int_atom_map for {atom, int} <- kw, into: %{}, do: {int, atom}
-        @string_int_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), int}
-        @string_atom_map for {atom, int} <- kw, into: %{}, do: {Atom.to_string(atom), atom}
-        @valid_values Keyword.values(@atom_int_kw) ++
-                        Keyword.keys(@atom_int_kw) ++ Map.keys(@string_int_map)
-
-        def type, do: :integer
-
-        def cast(term) do
-          EctoEnum.Type.cast(term, @int_atom_map, @string_atom_map)
-        end
-
-        def load(int) when is_integer(int) do
-          Map.fetch(@int_atom_map, int)
-        end
-
-        def dump(term) do
-          case EctoEnum.Type.dump(term, @atom_int_kw, @string_int_map, @int_atom_map) do
-            :error ->
-              msg =
-                "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
-                  "Valid enums are `#{inspect(__valid_values__())}`"
-
-              raise Ecto.ChangeError,
-                message: msg
-
-            value ->
-              value
-          end
-        end
-
-        def valid_value?(value) do
-          Enum.member?(@valid_values, value)
-        end
-
-        # Reflection
-        def __enum_map__(), do: @atom_int_kw
-        def __valid_values__(), do: @valid_values
+        use EctoEnum.Use, unquote(enum)
       end
     end
-  end
-
-  defmodule Type do
-    @spec cast(any, map, map) :: {:ok, atom} | :error
-    def cast(atom, int_atom_map, _) when is_atom(atom) do
-      if atom in Map.values(int_atom_map) do
-        {:ok, atom}
-      else
-        :error
-      end
-    end
-
-    def cast(string, _, string_atom_map) when is_binary(string) do
-      Map.fetch(string_atom_map, string)
-    end
-
-    def cast(int, int_atom_map, _) when is_integer(int) do
-      Map.fetch(int_atom_map, int)
-    end
-
-    def cast(_, _, _), do: :error
-
-    @spec dump(any, [{atom(), any()}], map, map) :: {:ok, integer} | :error
-    def dump(integer, _, _, int_atom_map) when is_integer(integer) do
-      if int_atom_map[integer] do
-        {:ok, integer}
-      else
-        :error
-      end
-    end
-
-    def dump(atom, atom_int_kw, _, _) when is_atom(atom) do
-      Keyword.fetch(atom_int_kw, atom)
-    end
-
-    def dump(string, _, string_int_map, _) when is_binary(string) do
-      Map.fetch(string_int_map, string)
-    end
-
-    def dump(_), do: :error
   end
 
   alias Ecto.Changeset

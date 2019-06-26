@@ -79,20 +79,26 @@ defmodule EctoEnumTest do
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
 
-    assert StatusEnum.__valid_values__() == [
-             0,
-             1,
-             2,
-             3,
-             :registered,
-             :active,
-             :inactive,
-             :archived,
-             "active",
-             "archived",
-             "inactive",
-             "registered"
-           ]
+    expected_values = [
+      0,
+      1,
+      2,
+      3,
+      :registered,
+      :active,
+      :inactive,
+      :archived,
+      "active",
+      "archived",
+      "inactive",
+      "registered"
+    ]
+
+    result = StatusEnum.__valid_values__()
+
+    for expected_value <- expected_values do
+      assert expected_value in result
+    end
   end
 
   describe "validate_enum/3" do
@@ -147,7 +153,6 @@ defmodule EctoEnumTest do
 
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
-      " Valid enums are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
-      " \"active\", \"archived\", \"inactive\", \"registered\"]`"
+      " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
   end
 end
