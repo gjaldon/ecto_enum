@@ -32,6 +32,14 @@ import EctoEnum
 defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
 ```
 
+Note that we can also use string-backed enums by doing the following:
+
+```elixir
+defenum StatusEnum, registered: "registered", active: "active", inactive: "active", archived: "archived"
+# short-cut way of using string-backed enums
+defenum StatusEnum, "registered", "active", "active", "archived"
+```
+
 Once defined, `EctoEnum` can be used like any other `Ecto.Type` by passing it to a field
 in your model's schema block. For example:
 

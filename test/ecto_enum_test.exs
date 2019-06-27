@@ -76,6 +76,10 @@ defmodule EctoEnumTest do
     end
   end
 
+  test "default enum's type is integer" do
+    assert StatusEnum.type() == :integer
+  end
+
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
 

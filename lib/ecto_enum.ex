@@ -6,6 +6,12 @@ defmodule EctoEnum do
   @doc """
   Defines an enum custom `Ecto.Type`.
 
+  For second argument, it accepts either a list of strings or a keyword list with keyword
+  values that are either strings or integers. Below are examples of a valid argument:
+      [registered: 0, active: 1, inactive: 2, archived: 3]
+      [registered: "registered", active: "active", inactive: "inactive", archived: "archived"]
+      ["registered", "active", "inactive", "archived"]
+
   It can be used like any other `Ecto.Type` by passing it to a field in your model's
   schema block. For example:
 
