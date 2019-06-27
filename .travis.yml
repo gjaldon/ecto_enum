@@ -4,6 +4,11 @@ elixir:
   - 1.9.0
   - 1.8.2
   - 1.7.4
+services:
+  - postgresql
+  - mysql
+before_install:
+  - mysql -e 'CREATE DATABASE ecto_test;'
 before_script:
   - psql -c 'create database ecto_test;' -U postgres
 script:
@@ -12,5 +17,3 @@ script:
 # Report documentation coverage to InchCI.
 after_script:
   - mix inch.report
-services:
-  - postgresql
