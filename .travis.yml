@@ -4,9 +4,13 @@ elixir:
   - 1.9.0
   - 1.8.2
   - 1.7.4
-# Report documentation coverage to InchCI.
-after_script:
-  - mix inch.report
+before_script:
+  - psql -c 'create database ecto_test;' -U postgres
 script:
   - mix test
   - MIX_ENV=mysql mix test
+# Report documentation coverage to InchCI.
+after_script:
+  - mix inch.report
+services:
+  - postgresql
