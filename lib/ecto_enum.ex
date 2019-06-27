@@ -64,8 +64,23 @@ defmodule EctoEnum do
 
   defmacro defenum(module, enum) do
     quote do
+      enum = Macro.escape(unquote(enum))
+      [h | _t] = enum
+
+      enum =
+        cond do
+          Keyword.keyword?(enum) ->
+            enum
+
+          is_binary(h) ->
+            Enum.map(enum, fn value -> {String.to_atom(value), value} end)
+
+          true ->
+            raise "Enum must be a keyword list or a list of strings"
+        end
+
       defmodule unquote(module) do
-        use EctoEnum.Use, unquote(enum)
+        use EctoEnum.Use, enum
       end
     end
   end

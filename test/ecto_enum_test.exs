@@ -147,15 +147,45 @@ defmodule EctoEnumTest do
     defenum TestEnum, zero: x
   end
 
+  test "defenum/2 can accept a list of strings or a keyword list" do
+    keywords = [
+      registered: "registered",
+      active: "active",
+      inactive: "inactive",
+      archived: "archived"
+    ]
+
+    defenum StringStatusEnum, keywords
+
+    assert StringStatusEnum.cast("registered") == {:ok, :registered}
+
+    keywords = [
+      "registered",
+      "active",
+      "inactive",
+      "archived"
+    ]
+
+    defenum StringStatusEnum, keywords
+
+    assert StringStatusEnum.cast("registered") == {:ok, :registered}
+  end
+
+  test "defenum/2 raises when 2nd arg is not a list of strings or a keyword list" do
+    assert_raise RuntimeError, "Enum must be a keyword list or a list of strings", fn ->
+      defenum StringStatusEnum, [{"not keyword", "list"}]
+    end
+  end
+
   test "defenum/3 can accept remote function calls" do
     defenum TestEnum, :role, User.roles()
   end
 
   keywords = [
-    registered: "registered",
-    active: "active",
-    inactive: "inactive",
-    archived: "archived"
+    "registered",
+    "active",
+    "inactive",
+    "archived"
   ]
 
   defenum StringStatusEnum, keywords
