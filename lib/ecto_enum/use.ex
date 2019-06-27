@@ -15,6 +15,7 @@ defmodule EctoEnum.Use do
       @valid_values keys ++ string_keys ++ Keyword.values(opts)
 
       {_key, value} = opts |> hd()
+
       type =
         if is_integer(value) do
           :integer

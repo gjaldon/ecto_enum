@@ -71,4 +71,12 @@ defmodule EctoEnum.PostgresTest do
       TestRepo.insert!(%User{status: 5})
     end
   end
+
+  test "using EctoEnum.Postgres for defining an Enum module" do
+    defmodule NewType do
+      use EctoEnum.Postgres, type: :new_type, enums: [:ready, :set, :go]
+    end
+
+    assert NewType.cast("ready") == {:ok, :ready}
+  end
 end

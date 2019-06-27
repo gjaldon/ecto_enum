@@ -17,7 +17,7 @@ defmodule EctoEnum.Postgres.Use do
 
       # Schema-related module attributes
       @default_schema "public"
-      @schema Keyword.get(input[:opts], :schema, @default_schema)
+      @schema Keyword.get(input, :schema, @default_schema)
       @__type__ :"#{@schema}.#{input[:type]}"
 
       def type, do: @__type__

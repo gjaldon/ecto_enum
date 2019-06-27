@@ -64,6 +64,18 @@ defmodule EctoEnum do
       [registered: 0, active: 1, inactive: 2, archived: 3]
   """
 
+  defmacro __using__(opts) do
+    quote do
+      opts = unquote(opts)
+
+      if opts[:type] && opts[:enums] do
+        use EctoEnum.Postgres.Use, unquote(opts)
+      else
+        use EctoEnum.Use, unquote(opts)
+      end
+    end
+  end
+
   defmacro defenum(module, type, enum, options \\ []) do
     EctoEnum.Postgres.defenum(module, type, enum, options)
   end

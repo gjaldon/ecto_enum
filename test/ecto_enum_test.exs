@@ -239,6 +239,22 @@ defmodule EctoEnumTest do
     assert StringStatusEnum.type() == :string
   end
 
+  test "using EctoEnum for defining an Enum module" do
+    defmodule CustomEnum do
+      use EctoEnum, ready: 0, set: 1, go: 2
+    end
+
+    assert CustomEnum.cast(0) == {:ok, :ready}
+  end
+
+  test "using EctoEnum with :type and :enums keys will use EctoEnum.Postgres underneath" do
+    defmodule PostgresType do
+      use EctoEnum, type: :new_type, enums: [:ready, :set, :go]
+    end
+
+    assert PostgresType.cast("ready") == {:ok, :ready}
+  end
+
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"

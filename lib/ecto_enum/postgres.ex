@@ -12,7 +12,7 @@ defmodule EctoEnum.Postgres do
           Enum.map(list, &String.to_atom/1)
         end
 
-      opts = [enums: list, type: unquote(type), opts: unquote(options)]
+      opts = Keyword.merge([enums: list, type: unquote(type)], unquote(options))
 
       defmodule unquote(module) do
         use EctoEnum.Postgres.Use, opts
