@@ -1,6 +1,23 @@
 defmodule EctoEnum do
   @moduledoc """
-  Provides `defenum/2` macro for defining an Enum Ecto type.
+  Provides `defenum/2` and `defenum/3` macro for defining an Enum Ecto type.
+
+  This module can also be `use`d to create an Ecto Enum like:
+
+      defmodule CustomEnum do
+        use EctoEnum, ready: 0, set: 1, go: 2
+      end
+
+  Or in place of using `EctoEnum.Postgres` like:
+
+      defmodule PostgresType do
+        use EctoEnum, type: :new_type, enums: [:ready, :set, :go]
+      end
+
+  The difference between the above two examples is that the previous one would use an
+  integer column in the database while the latter one would use a custom type in PostgreSQL.
+
+  Note that only PostgreSQL is supported for custom data types at the moment.
   """
 
   @doc """

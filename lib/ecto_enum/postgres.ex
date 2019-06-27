@@ -1,5 +1,23 @@
 defmodule EctoEnum.Postgres do
-  @moduledoc false
+  @moduledoc """
+  This module can be `use`d to create an Ecto Enum.
+
+  Usage:
+
+      defmodule NewType do
+        use EctoEnum.Postgres, type: :new_type, enums: [:ready, :set, :go], schema: "this_is_optional"
+      end
+
+  Note that `:type` and `:enums` are required, while `:schema` is optional.
+
+  This module is meant to be used when you want to use User-defined Types in PostgreSQL.
+  """
+
+  defmacro __using__(opts) do
+    quote do
+      use EctoEnum.Postgres.Use, unquote(opts)
+    end
+  end
 
   def defenum(module, type, list, options \\ []) do
     quote do
