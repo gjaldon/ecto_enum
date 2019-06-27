@@ -76,23 +76,33 @@ defmodule EctoEnumTest do
     end
   end
 
+  test "default enum's type is integer" do
+    assert StatusEnum.type() == :integer
+  end
+
   test "reflection" do
     assert StatusEnum.__enum_map__() == [registered: 0, active: 1, inactive: 2, archived: 3]
 
-    assert StatusEnum.__valid_values__() == [
-             0,
-             1,
-             2,
-             3,
-             :registered,
-             :active,
-             :inactive,
-             :archived,
-             "active",
-             "archived",
-             "inactive",
-             "registered"
-           ]
+    expected_values = [
+      0,
+      1,
+      2,
+      3,
+      :registered,
+      :active,
+      :inactive,
+      :archived,
+      "active",
+      "archived",
+      "inactive",
+      "registered"
+    ]
+
+    result = StatusEnum.__valid_values__()
+
+    for expected_value <- expected_values do
+      assert expected_value in result
+    end
   end
 
   describe "validate_enum/3" do
@@ -141,13 +151,112 @@ defmodule EctoEnumTest do
     defenum TestEnum, zero: x
   end
 
+  test "defenum/2 can accept a list of strings or a keyword list" do
+    keywords = [
+      registered: "registered",
+      active: "active",
+      inactive: "inactive",
+      archived: "archived"
+    ]
+
+    defenum StringStatusEnum, keywords
+
+    assert StringStatusEnum.cast("registered") == {:ok, :registered}
+
+    keywords = [
+      "registered",
+      "active",
+      "inactive",
+      "archived"
+    ]
+
+    defenum StringStatusEnum, keywords
+
+    assert StringStatusEnum.cast("registered") == {:ok, :registered}
+  end
+
+  test "defenum/2 raises when 2nd arg is not a list of strings or a keyword list" do
+    assert_raise RuntimeError, "Enum must be a keyword list or a list of strings", fn ->
+      defenum StringStatusEnum, [{"not keyword", "list"}]
+    end
+  end
+
   test "defenum/3 can accept remote function calls" do
     defenum TestEnum, :role, User.roles()
   end
 
+  keywords = [
+    "registered",
+    "active",
+    "inactive",
+    "archived"
+  ]
+
+  defenum StringStatusEnum, keywords
+
+  defmodule Account do
+    use Ecto.Schema
+
+    schema "accounts" do
+      field(:status, StringStatusEnum)
+    end
+
+    def roles do
+      [:admin, :manager, :user]
+    end
+  end
+
+  test "string-backed enum accepts int, atom and string on save" do
+    user = TestRepo.insert!(%Account{status: "registered"})
+    user = TestRepo.get(Account, user.id)
+    assert user.status == :registered
+
+    user = Ecto.Changeset.change(user, status: :active)
+    user = TestRepo.update!(user)
+    assert user.status == :active
+
+    user = Ecto.Changeset.change(user, status: "inactive")
+    user = TestRepo.update!(user)
+    assert user.status == "inactive"
+
+    user = TestRepo.get(Account, user.id)
+    assert user.status == :inactive
+
+    TestRepo.insert!(%Account{status: :archived})
+    user = TestRepo.get_by(Account, status: :archived)
+    assert user.status == :archived
+  end
+
+  test "string-backed enum casts string and atom to atom" do
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
+    assert changes.status == :active
+
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
+    assert changes.status == :inactive
+  end
+
+  test "string-backed enum's type is string" do
+    assert StringStatusEnum.type() == :string
+  end
+
+  test "using EctoEnum for defining an Enum module" do
+    defmodule CustomEnum do
+      use EctoEnum, ready: 0, set: 1, go: 2
+    end
+
+    assert CustomEnum.cast(0) == {:ok, :ready}
+  end
+
+  test "using EctoEnum with :type and :enums keys will use EctoEnum.Postgres underneath" do
+    defmodule PostgresType do
+      use EctoEnum, type: :new_type, enums: [:ready, :set, :go]
+    end
+
+    assert PostgresType.cast("ready") == {:ok, :ready}
+  end
+
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
-      " Valid enums are `[0, 1, 2, 3, :registered, :active, :inactive, :archived," <>
-      " \"active\", \"archived\", \"inactive\", \"registered\"]`"
+      " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
   end
 end

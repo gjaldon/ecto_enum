@@ -1,11 +1,19 @@
 sudo: false
 language: elixir
 elixir:
-  - 1.4.0
-  - 1.5.0
-# Report documentation coverage to InchCI.
-after_script:
-  - mix inch.report
+  - 1.9.0
+  - 1.8.2
+  - 1.7.4
+services:
+  - postgresql
+  - mysql
+before_install:
+  - mysql -e 'CREATE DATABASE ecto_test;'
+before_script:
+  - psql -c 'create database ecto_test;' -U postgres
 script:
   - mix test
   - MIX_ENV=mysql mix test
+# Report documentation coverage to InchCI.
+after_script:
+  - mix inch.report

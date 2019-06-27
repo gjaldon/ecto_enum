@@ -15,12 +15,14 @@ First, we add `ecto_enum` to `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ecto_enum, "~> 1.2"}
+    {:ecto_enum, "~> 1.3"}
   ]
 end
 ```
 
 Run `mix deps.get` to install `ecto_enum`.
+
+### Creating an Ecto Enum with `defenum/2` macro
 
 We will then have to define our enum. We can do this in a separate file since defining
 an enum is just defining a module. We do it like:
@@ -30,6 +32,14 @@ an enum is just defining a module. We do it like:
 
 import EctoEnum
 defenum StatusEnum, registered: 0, active: 1, inactive: 2, archived: 3
+```
+
+Note that we can also use string-backed enums by doing the following:
+
+```elixir
+defenum StatusEnum, registered: "registered", active: "active", inactive: "active", archived: "archived"
+# short-cut way of using string-backed enums
+defenum StatusEnum, "registered", "active", "active", "archived"
 ```
 
 Once defined, `EctoEnum` can be used like any other `Ecto.Type` by passing it to a field
@@ -64,6 +74,43 @@ iex> from(u in User, where: u.status == ^:registered) |> Repo.all() |> length
 ```
 
 Passing a value that the custom Enum type does not recognize will result in an error.
+
+### Creating an Ecto Enum by `use`ing `EctoEnum`
+
+Another way to create an Ecto Enum is by `use`ing the `EctoEnum` or the `EctoEnum.Postgres`
+modules.
+
+To `use` `EctoEnum` with integer-backed storage:
+
+```elixir
+defmodule CustomEnum do
+  use EctoEnum, ready: 0, set: 1, go: 2
+end
+```
+
+To `use` `EctoEnum` with string-backed storage:
+
+```elixir
+defmodule CustomEnum do
+  use EctoEnum, "ready", "set", "go"
+end
+```
+
+To `use` `EctoEnum` with Postgres user-defined types:
+
+```elixir
+defmodule PostgresType do
+  use EctoEnum, type: :new_type, enums: [:ready, :set, :go]
+end
+```
+
+We can also `use` `EctoEnum.Postgres` directly like:
+
+```elixir
+defmodule NewType do
+  use EctoEnum.Postgres, type: :new_type, enums: [:ready, :set, :go]
+end
+```
 
 ### Reflection
 

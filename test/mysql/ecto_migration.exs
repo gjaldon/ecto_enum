@@ -5,5 +5,9 @@ defmodule Ecto.Integration.Migration do
     create table(:users) do
       add(:status, :integer)
     end
+
+    create table(:accounts) do
+      add(:status, :string)
+    end
   end
 end

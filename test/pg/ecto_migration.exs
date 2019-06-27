@@ -6,6 +6,10 @@ defmodule Ecto.Integration.Migration do
       add(:status, :integer)
     end
 
+    create table(:accounts) do
+      add(:status, :string)
+    end
+
     execute("CREATE TYPE status AS ENUM ('registered', 'active', 'inactive', 'archived')")
 
     create table(:users_pg) do
