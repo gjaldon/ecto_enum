@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+- Refactored internals to make it easier to support `use`ing feature and string-backed enums.
+- Add `use`ing functionality so we can use `EctoEnum` or `EctoEnum.Postgres` to define Ecto Enums.
+- Support for string-backed enums!
+
 ## 1.2.0
 - Update formatter config to allow use of `defenum/2` and `defenum/3` without parens.
 - Enum function `create_type/0` is now reversible and can be used in `change` in migration files.

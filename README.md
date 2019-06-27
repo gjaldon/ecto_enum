@@ -15,7 +15,7 @@ First, we add `ecto_enum` to `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ecto_enum, "~> 1.2"}
+    {:ecto_enum, "~> 1.3"}
   ]
 end
 ```
