@@ -2,114 +2,76 @@ defmodule EctoEnum.Postgres.Use do
   @moduledoc false
 
   defmacro __using__(input) do
-    quote do
+    quote bind_quoted: [input: input] do
       @behaviour Ecto.Type
 
-      input = unquote(input)
-
       enums = input[:enums]
+      valid_values  = enums ++ Enum.map(enums, &Atom.to_string/1)
 
-      Module.put_attribute(__MODULE__, :enums, enums)
+      for atom <- enums do
+        string = Atom.to_string(atom)
 
-      @before_compile EctoEnum.Postgres.Use
+        def cast(unquote(atom)), do: {:ok, unquote(atom)}
+        def cast(unquote(string)), do: {:ok, unquote(atom)}
+      end
 
-      @valid_values enums ++ Enum.map(enums, &Atom.to_string/1)
+      def cast(_other), do: :error
 
-      # Schema-related module attributes
-      @default_schema "public"
-      @schema Keyword.get(input, :schema, @default_schema)
-      @__type__ :"#{@schema}.#{input[:type]}"
+      for atom <- enums do
+        string = Atom.to_string(atom)
 
-      def type, do: @__type__
+        def dump(unquote(atom)), do: {:ok, unquote(string)}
+        def dump(unquote(string)), do: {:ok, unquote(string)}
+      end
 
-      def schema, do: @schema
+      def dump(term) do
+        msg =
+          "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
+            "Valid enums are `#{inspect(__valid_values__())}`"
+
+        raise Ecto.ChangeError, message: msg
+      end
+
+      for atom <- enums do
+        string = Atom.to_string(atom)
+
+        def load(unquote(atom)), do: {:ok, unquote(atom)}
+        def load(unquote(string)), do: {:ok, unquote(atom)}
+      end
 
       def valid_value?(value) do
-        Enum.member?(@valid_values, value)
+        Enum.member?(unquote(valid_values), value)
       end
 
       # # Reflection
-      def __enums__(), do: @enums
+      def __enums__(), do: unquote(enums)
       def __enum_map__(), do: __enums__()
-      def __valid_values__(), do: @valid_values
+      def __valid_values__(), do: unquote(valid_values)
 
-      @types Enum.map_join(enums, ", ", &"'#{&1}'")
-      @create_sql "CREATE TYPE #{@__type__} AS ENUM (#{@types})"
-      @drop_sql "DROP TYPE #{@__type__}"
+      default_schema =  "public"
+      schema = Keyword.get(input, :schema, default_schema)
+      type = :"#{schema}.#{input[:type]}"
+
+      def type, do: unquote(type)
+
+      def schema, do: unquote(schema)
+
+      types =  Enum.map_join(enums, ", ", &"'#{&1}'")
+      create_sql =  "CREATE TYPE #{type} AS ENUM (#{types})"
+      drop_sql = "DROP TYPE #{type}"
 
       if function_exported?(Ecto.Migration, :execute, 2) do
         def create_type() do
-          Ecto.Migration.execute(@create_sql, @drop_sql)
+          Ecto.Migration.execute(unquote(create_sql), unquote(drop_sql))
         end
       else
         def create_type() do
-          Ecto.Migration.execute(@create_sql)
+          Ecto.Migration.execute(unquote(create_sql))
         end
       end
 
       def drop_type() do
-        Ecto.Migration.execute(@drop_sql)
-      end
-    end
-  end
-
-  defmacro __before_compile__(env) do
-    enums = Module.get_attribute(env.module, :enums)
-
-    casts(enums) ++ dumps(enums) ++ loads(enums)
-  end
-
-  defp casts(enums) do
-    casts =
-      for atom <- enums do
-        string = Atom.to_string(atom)
-
-        quote do
-          def cast(unquote(atom)), do: {:ok, unquote(atom)}
-          def cast(unquote(string)), do: {:ok, unquote(atom)}
-        end
-      end
-
-    cast =
-      quote do
-        def cast(_other), do: :error
-      end
-
-    casts ++ [cast]
-  end
-
-  defp dumps(enums) do
-    dumps =
-      for atom <- enums do
-        string = Atom.to_string(atom)
-
-        quote do
-          def dump(unquote(atom)), do: {:ok, unquote(string)}
-          def dump(unquote(string)), do: {:ok, unquote(string)}
-        end
-      end
-
-    dump =
-      quote do
-        def dump(term) do
-          msg =
-            "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
-              "Valid enums are `#{inspect(__valid_values__())}`"
-
-          raise Ecto.ChangeError, message: msg
-        end
-      end
-
-    dumps ++ [dump]
-  end
-
-  defp loads(enums) do
-    for atom <- enums do
-      string = Atom.to_string(atom)
-
-      quote do
-        def load(unquote(atom)), do: {:ok, unquote(atom)}
-        def load(unquote(string)), do: {:ok, unquote(atom)}
+        Ecto.Migration.execute(unquote(drop_sql))
       end
     end
   end
