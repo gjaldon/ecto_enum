@@ -7,7 +7,7 @@ defmodule EctoEnum.Use do
 
       keys = Keyword.keys(opts)
       string_keys = Enum.map(keys, &Atom.to_string/1)
-      @valid_values keys ++ string_keys ++ Keyword.values(opts)
+      @valid_values Enum.uniq(keys ++ string_keys ++ Keyword.values(opts))
 
       {_key, value} = opts |> hd()
 
