@@ -39,7 +39,7 @@ Note that we can also use string-backed enums by doing the following:
 ```elixir
 defenum StatusEnum, registered: "registered", active: "active", inactive: "active", archived: "archived"
 # short-cut way of using string-backed enums
-defenum StatusEnum, ["registered", "active", "active", "archived"]
+defenum StatusEnum, ["registered", "active", "inactive", "archived"]
 ```
 
 Once defined, `EctoEnum` can be used like any other `Ecto.Type` by passing it to a field

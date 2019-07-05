@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+- Fixed a bug where multiple function clauses of `cast` and `dump` were defined by `EctoEnum.Use`.
+This error happens when defining string-backed enums, since multiple function clauses for the string
+value is defined.
+
 ## 1.3.0
 - Refactored internals to make it easier to support `use`ing feature and string-backed enums.
 - Add `use`ing functionality so we can use `EctoEnum` or `EctoEnum.Postgres` to define Ecto Enums.
