@@ -20,20 +20,14 @@ defmodule EctoEnum.Use do
 
       def type, do: unquote(type)
 
-      for {key, value} <- opts do
-        string_key = Atom.to_string(key)
-        def cast(unquote(key)), do: {:ok, unquote(key)}
-        def cast(unquote(value)), do: {:ok, unquote(key)}
-        def cast(unquote(string_key)), do: {:ok, unquote(key)}
+      for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
+        def cast(unquote(k)), do: {:ok, unquote(key)}
       end
 
       def cast(_other), do: :error
 
-      for {key, value} <- opts do
-        string_key = Atom.to_string(key)
-        def dump(unquote(key)), do: {:ok, unquote(value)}
-        def dump(unquote(value)), do: {:ok, unquote(value)}
-        def dump(unquote(string_key)), do: {:ok, unquote(value)}
+      for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
+        def dump(unquote(k)), do: {:ok, unquote(value)}
       end
 
       def dump(term) do
