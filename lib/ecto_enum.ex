@@ -79,6 +79,11 @@ defmodule EctoEnum do
 
       iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
+
+  Enums also generate a typespec for use with dialyzer, available as the `t()` type
+
+      iex> t(StatusEnum)
+      @type t() :: :registered | :active | :inactive | :archived
   """
 
   defmacro __using__(opts) do

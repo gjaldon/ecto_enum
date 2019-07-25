@@ -1,9 +1,15 @@
 defmodule EctoEnum.Use do
   @moduledoc false
 
+  alias EctoEnum.Typespec
+
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
+      typespec = Typespec.make(Keyword.keys(opts))
+
       @behaviour Ecto.Type
+
+      @type t :: unquote(typespec)
 
       keys = Keyword.keys(opts)
       string_keys = Enum.map(keys, &Atom.to_string/1)

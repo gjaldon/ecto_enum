@@ -1,9 +1,15 @@
 defmodule EctoEnum.Postgres.Use do
   @moduledoc false
 
+  alias EctoEnum.Typespec
+
   defmacro __using__(input) do
     quote bind_quoted: [input: input] do
+      typespec = Typespec.make(input[:enums])
+
       @behaviour Ecto.Type
+
+      @type t :: unquote(typespec)
 
       enums = input[:enums]
       valid_values  = enums ++ Enum.map(enums, &Atom.to_string/1)
