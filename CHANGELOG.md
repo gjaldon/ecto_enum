@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2
+- EctoEnum now generates typespecs for dialyzer.
+- Fixed a bug where the `create_type/0` with the drop was not being created.
+
 ## 1.3.1
 - Fixed a bug where multiple function clauses of `cast` and `dump` were defined by `EctoEnum.Use`.
 This error happens when defining string-backed enums, since multiple function clauses for the string
