@@ -12,7 +12,7 @@ defmodule EctoEnum.Postgres.Use do
       @type t :: unquote(typespec)
 
       enums = input[:enums]
-      valid_values  = enums ++ Enum.map(enums, &Atom.to_string/1)
+      valid_values = enums ++ Enum.map(enums, &Atom.to_string/1)
 
       for atom <- enums do
         string = Atom.to_string(atom)
@@ -54,7 +54,7 @@ defmodule EctoEnum.Postgres.Use do
       def __enum_map__(), do: __enums__()
       def __valid_values__(), do: unquote(valid_values)
 
-      default_schema =  "public"
+      default_schema = "public"
       schema = Keyword.get(input, :schema, default_schema)
       type = :"#{schema}.#{input[:type]}"
 
@@ -62,8 +62,8 @@ defmodule EctoEnum.Postgres.Use do
 
       def schema, do: unquote(schema)
 
-      types =  Enum.map_join(enums, ", ", &"'#{&1}'")
-      create_sql =  "CREATE TYPE #{type} AS ENUM (#{types})"
+      types = Enum.map_join(enums, ", ", &"'#{&1}'")
+      create_sql = "CREATE TYPE #{type} AS ENUM (#{types})"
       drop_sql = "DROP TYPE #{type}"
 
       if function_exported?(Ecto.Migration, :execute, 2) do

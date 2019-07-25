@@ -256,33 +256,35 @@ defmodule EctoEnumTest do
   end
 
   test "generates correct t() typespec" do
-    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.StatusEnum)
-    == {:ok,
-        [
-          type: {:t,
-            {:type, 0, :union,
+    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.StatusEnum) ==
+             {:ok,
               [
-                {:atom, 0, :registered},
-                {:atom, 0, :active},
-                {:atom, 0, :inactive},
-                {:atom, 0, :archived}
-              ]}, []}
-        ]}
+                type:
+                  {:t,
+                   {:type, 0, :union,
+                    [
+                      {:atom, 0, :registered},
+                      {:atom, 0, :active},
+                      {:atom, 0, :inactive},
+                      {:atom, 0, :archived}
+                    ]}, []}
+              ]}
   end
 
   test "generates correct t() typespec for postgres types" do
-    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.PGStatusEnum)
-    == {:ok,
-        [
-          type: {:t,
-            {:type, 0, :union,
+    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.PGStatusEnum) ==
+             {:ok,
               [
-                {:atom, 0, :registered},
-                {:atom, 0, :active},
-                {:atom, 0, :inactive},
-                {:atom, 0, :archived}
-              ]}, []}
-        ]}
+                type:
+                  {:t,
+                   {:type, 0, :union,
+                    [
+                      {:atom, 0, :registered},
+                      {:atom, 0, :active},
+                      {:atom, 0, :inactive},
+                      {:atom, 0, :archived}
+                    ]}, []}
+              ]}
   end
 
   def custom_error_msg(value) do
