@@ -255,6 +255,38 @@ defmodule EctoEnumTest do
     assert PostgresType.cast("ready") == {:ok, :ready}
   end
 
+  test "generates correct t() typespec" do
+    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.StatusEnum) ==
+             {:ok,
+              [
+                type:
+                  {:t,
+                   {:type, 0, :union,
+                    [
+                      {:atom, 0, :registered},
+                      {:atom, 0, :active},
+                      {:atom, 0, :inactive},
+                      {:atom, 0, :archived}
+                    ]}, []}
+              ]}
+  end
+
+  test "generates correct t() typespec for postgres types" do
+    assert Code.Typespec.fetch_types(EctoEnum.Typespec.TestModule.PGStatusEnum) ==
+             {:ok,
+              [
+                type:
+                  {:t,
+                   {:type, 0, :union,
+                    [
+                      {:atom, 0, :registered},
+                      {:atom, 0, :active},
+                      {:atom, 0, :inactive},
+                      {:atom, 0, :archived}
+                    ]}, []}
+              ]}
+  end
+
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
