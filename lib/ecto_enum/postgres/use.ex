@@ -66,6 +66,7 @@ defmodule EctoEnum.Postgres.Use do
       create_sql = "CREATE TYPE #{type} AS ENUM (#{types})"
       drop_sql = "DROP TYPE #{type}"
 
+      Code.ensure_loaded(Ecto.Migration)
       if function_exported?(Ecto.Migration, :execute, 2) do
         def create_type() do
           Ecto.Migration.execute(unquote(create_sql), unquote(drop_sql))
