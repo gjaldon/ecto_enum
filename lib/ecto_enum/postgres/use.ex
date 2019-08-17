@@ -59,6 +59,7 @@ defmodule EctoEnum.Postgres.Use do
       type = :"#{schema}.#{input[:type]}"
 
       def type, do: unquote(type)
+      def schemaless_type, do: unquote(input[:type])
 
       def schema, do: unquote(schema)
 
