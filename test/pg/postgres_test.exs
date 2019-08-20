@@ -79,4 +79,8 @@ defmodule EctoEnum.PostgresTest do
 
     assert NewType.cast("ready") == {:ok, :ready}
   end
+
+  test "provides getter functions for the keys that match to values of enum" do
+    assert StatusEnum.registered() == :registered
+  end
 end

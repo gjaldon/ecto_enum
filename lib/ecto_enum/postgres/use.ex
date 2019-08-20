@@ -45,6 +45,10 @@ defmodule EctoEnum.Postgres.Use do
         def load(unquote(string)), do: {:ok, unquote(atom)}
       end
 
+      for atom <- enums do
+        def unquote(atom)(), do: unquote(atom)
+      end
+
       def valid_value?(value) do
         Enum.member?(unquote(valid_values), value)
       end
@@ -68,6 +72,7 @@ defmodule EctoEnum.Postgres.Use do
       drop_sql = "DROP TYPE #{type}"
 
       Code.ensure_loaded(Ecto.Migration)
+
       if function_exported?(Ecto.Migration, :execute, 2) do
         def create_type() do
           Ecto.Migration.execute(unquote(create_sql), unquote(drop_sql))

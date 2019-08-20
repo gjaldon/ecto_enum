@@ -291,4 +291,9 @@ defmodule EctoEnumTest do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
   end
+
+  test "provides getter functions for the keys that match to values of enum" do
+    assert StatusEnum.registered() == 0
+    assert StringStatusEnum.registered() == "registered"
+  end
 end
