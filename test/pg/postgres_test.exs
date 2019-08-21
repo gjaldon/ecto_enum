@@ -2,7 +2,7 @@ defmodule EctoEnum.PostgresTest do
   use ExUnit.Case, async: false
 
   import EctoEnum
-  defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
+  defenum StatusEnum, :status, [:registered, :active, :inactive, :archived, :"on-hold"]
 
   defmodule User do
     use Ecto.Schema
@@ -82,5 +82,6 @@ defmodule EctoEnum.PostgresTest do
 
   test "provides getter functions for the keys that match to values of enum" do
     assert StatusEnum.registered() == :registered
+    assert StatusEnum.on_hold() == :"on-hold"
   end
 end
