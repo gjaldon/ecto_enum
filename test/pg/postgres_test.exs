@@ -80,8 +80,28 @@ defmodule EctoEnum.PostgresTest do
     assert NewType.cast("ready") == {:ok, :ready}
   end
 
-  test "provides getter functions for the keys that match to values of enum" do
+  test "provides getter macros for the keys that match to values of enum" do
+    require StatusEnum
+
     assert StatusEnum.registered() == :registered
     assert StatusEnum.on_hold() == :"on-hold"
+  end
+
+  test "getter macros should work in pattern matches" do
+    defmodule Traffic do
+      import EctoEnum
+
+      defenum(LightEnum, :traffic_light_enum, [:green, :red, :yellow])
+
+      def action(LightEnum.green()), do: "go!"
+      def action(LightEnum.red()), do: "stop!"
+      def action(LightEnum.yellow()), do: "slow down!"
+    end
+
+    require Traffic.LightEnum
+
+    assert Traffic.action(Traffic.LightEnum.green()) == "go!"
+    assert Traffic.action(Traffic.LightEnum.red()) == "stop!"
+    assert Traffic.action(Traffic.LightEnum.yellow()) == "slow down!"
   end
 end

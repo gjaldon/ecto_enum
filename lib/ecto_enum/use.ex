@@ -27,7 +27,7 @@ defmodule EctoEnum.Use do
       def type, do: unquote(type)
 
       for {key, value} <- opts do
-        def unquote(EctoEnum.Macro.to_function(key))(), do: unquote(value || key)
+        defmacro unquote(EctoEnum.Macro.to_function(key))(), do: unquote(value || key)
       end
 
       for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do

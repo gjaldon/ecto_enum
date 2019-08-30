@@ -292,8 +292,30 @@ defmodule EctoEnumTest do
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
   end
 
-  test "provides getter functions for the keys that match to values of enum" do
+  test "provides getter macros for the keys that match to values of enum" do
+    require StatusEnum
+
     assert StatusEnum.registered() == 0
     assert StringStatusEnum.registered() == "registered"
+  end
+
+  test "getter macros should work in pattern matches" do
+    defmodule Traffic do
+      import EctoEnum
+
+      defenum(LightEnum, ["green", "red", "yellow"])
+
+      require LightEnum
+
+      def action(LightEnum.green()), do: "go!"
+      def action(LightEnum.red()), do: "stop!"
+      def action(LightEnum.yellow()), do: "slow down!"
+    end
+
+    require Traffic.LightEnum
+
+    assert Traffic.action(Traffic.LightEnum.green()) == "go!"
+    assert Traffic.action(Traffic.LightEnum.red()) == "stop!"
+    assert Traffic.action(Traffic.LightEnum.yellow()) == "slow down!"
   end
 end
