@@ -294,28 +294,33 @@ defmodule EctoEnumTest do
 
   test "provides getter macros for the keys that match to values of enum" do
     require StatusEnum
+    require StringStatusEnum
 
     assert StatusEnum.registered() == 0
     assert StringStatusEnum.registered() == "registered"
   end
 
+  defmodule Light do
+    import EctoEnum
+
+    defenum(LightEnum, ["green", "red", "yellow"])
+  end
+
+  defmodule Traffic do
+    alias Light.LightEnum
+    require LightEnum
+
+    def action(LightEnum.green()), do: "go!"
+    def action(LightEnum.red()), do: "stop!"
+    def action(LightEnum.yellow()), do: "slow down!"
+  end
+
   test "getter macros should work in pattern matches" do
-    defmodule Traffic do
-      import EctoEnum
+    alias Light.LightEnum
+    require LightEnum
 
-      defenum(LightEnum, ["green", "red", "yellow"])
-
-      require LightEnum
-
-      def action(LightEnum.green()), do: "go!"
-      def action(LightEnum.red()), do: "stop!"
-      def action(LightEnum.yellow()), do: "slow down!"
-    end
-
-    require Traffic.LightEnum
-
-    assert Traffic.action(Traffic.LightEnum.green()) == "go!"
-    assert Traffic.action(Traffic.LightEnum.red()) == "stop!"
-    assert Traffic.action(Traffic.LightEnum.yellow()) == "slow down!"
+    assert Traffic.action(LightEnum.green()) == "go!"
+    assert Traffic.action(LightEnum.red()) == "stop!"
+    assert Traffic.action(LightEnum.yellow()) == "slow down!"
   end
 end

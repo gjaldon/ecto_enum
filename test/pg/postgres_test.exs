@@ -87,21 +87,24 @@ defmodule EctoEnum.PostgresTest do
     assert StatusEnum.on_hold() == :"on-hold"
   end
 
+  defmodule Light do
+    import EctoEnum
+
+    defenum(LightEnum, :traffic_light_enum, [:green, :red, :yellow])
+  end
+
+  defmodule Traffic do
+    require Light.LightEnum
+    def action(Light.LightEnum.green()), do: "go!"
+    def action(Light.LightEnum.red()), do: "stop!"
+    def action(Light.LightEnum.yellow()), do: "slow down!"
+  end
+
   test "getter macros should work in pattern matches" do
-    defmodule Traffic do
-      import EctoEnum
+    require Light.LightEnum
 
-      defenum(LightEnum, :traffic_light_enum, [:green, :red, :yellow])
-
-      def action(LightEnum.green()), do: "go!"
-      def action(LightEnum.red()), do: "stop!"
-      def action(LightEnum.yellow()), do: "slow down!"
-    end
-
-    require Traffic.LightEnum
-
-    assert Traffic.action(Traffic.LightEnum.green()) == "go!"
-    assert Traffic.action(Traffic.LightEnum.red()) == "stop!"
-    assert Traffic.action(Traffic.LightEnum.yellow()) == "slow down!"
+    assert Traffic.action(Light.LightEnum.green()) == "go!"
+    assert Traffic.action(Light.LightEnum.red()) == "stop!"
+    assert Traffic.action(Light.LightEnum.yellow()) == "slow down!"
   end
 end
