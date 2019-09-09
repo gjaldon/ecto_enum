@@ -44,6 +44,10 @@ defmodule EctoEnum.Use do
         raise Ecto.ChangeError, message: msg
       end
 
+      def embed_as(_), do: :self
+
+      def equal?(term1, term2), do: term1 == term2
+
       for {key, value} <- opts do
         def load(unquote(value)), do: {:ok, unquote(key)}
       end
