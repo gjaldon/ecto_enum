@@ -38,6 +38,10 @@ defmodule EctoEnum.Postgres.Use do
         raise Ecto.ChangeError, message: msg
       end
 
+      def embed_as(_), do: :self
+
+      def equal?(term1, term2), do: term1 == term2
+
       for atom <- enums do
         string = Atom.to_string(atom)
 
@@ -68,6 +72,7 @@ defmodule EctoEnum.Postgres.Use do
       drop_sql = "DROP TYPE #{type}"
 
       Code.ensure_loaded(Ecto.Migration)
+
       if function_exported?(Ecto.Migration, :execute, 2) do
         def create_type() do
           Ecto.Migration.execute(unquote(create_sql), unquote(drop_sql))
