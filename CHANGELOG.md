@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+- EctoEnum supports Ecto 3.0
+  - Uses ecto and ecto_sql >= 3.0 deps
+  - Updates tests
+  - Add required `embed_as/1` and `equal?/2` callbacks for `Ecto.Type` modules
+
 ## 1.3.2
 - EctoEnum now generates typespecs for dialyzer.
 - Fixed a bug where the `create_type/0` with the drop was not being created.
