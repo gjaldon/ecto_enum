@@ -1,47 +1,32 @@
 Code.require_file("../ecto_enum_test.exs", __DIR__)
 
 defmodule EctoEnumPostgresTest do
-  use ExUnit.Case
-  import EctoEnum
+  use ExUnit.Case, async: false
 
   alias Ecto.Integration.TestRepo
 
-  test "create_type/1 can accept schema and creates a type in that schema" do
-    Ecto.Adapters.SQL.query!(TestRepo, "CREATE SCHEMA other_schema", [])
+  defmodule User do
+    use Ecto.Schema
 
-    defenum(TestEnum, :role, [:admin, :manager, :user], schema: "other_schema")
+    @schema_prefix "other_schema"
 
-    defmodule TestMigration do
-      use Ecto.Migration
-
-      def up do
-        TestEnum.create_type()
-
-        create table("users", prefix: "other_schema") do
-          add(:role, TestEnum.type())
-        end
-      end
-
-      def down do
-        drop(table("users", prefix: "other_schema"))
-        TestEnum.drop_type()
-      end
+    schema "users" do
+      field(:role, TestEnum)
     end
 
-    assert :ok = Ecto.Migrator.up(TestRepo, 1, TestMigration, log: false)
+    def roles() do
+      [:admin, :manager, :user]
+    end
+  end
 
-    defmodule User do
-      use Ecto.Schema
+  test "User Defined Type in PG  works with EctoEnum" do
+    error_msg =
+      "Value `:non_existent_role` is not a valid enum for `TestEnum`. Valid enums are `[:admin, :manager, :user, \"admin\", \"manager\", \"user\"]`"
 
-      schema "other_schema.users" do
-        field(:role, TestEnum)
-      end
-
-      def roles() do
-        [:admin, :manager, :user]
-      end
+    assert_raise Ecto.ChangeError, error_msg, fn ->
+      TestRepo.insert!(%User{role: :non_existent_role})
     end
 
-    Ecto.Migrator.down(TestRepo, 1, TestMigration, log: false)
+    assert TestRepo.insert!(%User{role: :admin}).role == :admin
   end
 end

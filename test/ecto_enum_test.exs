@@ -41,26 +41,26 @@ defmodule EctoEnumTest do
   end
 
   test "casts int and binary to atom" do
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status)a)
     assert changes.status == :active
 
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => 3}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => 3}, ~w(status)a)
     assert changes.status == :archived
 
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status)a)
     assert changes.status == :inactive
   end
 
   test "raises when input is not in the enum map" do
     error = {:status, {"is invalid", [type: EctoEnumTest.StatusEnum, validation: :cast]}}
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => "retroactive"}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => "retroactive"}, ~w(status)a)
     assert error in changeset.errors
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => :retroactive}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => :retroactive}, ~w(status)a)
     assert error in changeset.errors
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => 4}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => 4}, ~w(status)a)
     assert error in changeset.errors
 
     assert_raise Ecto.ChangeError, custom_error_msg("retroactive"), fn ->
@@ -228,10 +228,10 @@ defmodule EctoEnumTest do
   end
 
   test "string-backed enum casts string and atom to atom" do
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status)a)
     assert changes.status == :active
 
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status)a)
     assert changes.status == :inactive
   end
 

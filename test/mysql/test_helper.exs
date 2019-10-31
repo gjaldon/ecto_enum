@@ -6,13 +6,12 @@ alias Ecto.Integration.PoolRepo
 Code.require_file("ecto_migration.exs", __DIR__)
 
 Application.put_env(:ecto, TestRepo,
-  adapter: Ecto.Adapters.MySQL,
   url: "ecto://root@localhost/ecto_test",
   pool: Ecto.Adapters.SQL.Sandbox
 )
 
 defmodule TestRepo do
-  use Ecto.Repo, otp_app: :ecto
+  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MySQL
 end
 
 Application.put_env(:ecto, PoolRepo,
@@ -22,7 +21,7 @@ Application.put_env(:ecto, PoolRepo,
 )
 
 defmodule PoolRepo do
-  use Ecto.Repo, otp_app: :ecto
+  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MySQL
 
   def create_prefix(prefix) do
     "create database #{prefix}"

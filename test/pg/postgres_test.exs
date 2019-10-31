@@ -36,27 +36,27 @@ defmodule EctoEnum.PostgresTest do
   end
 
   test "casts binary to atom" do
-    %{errors: errors} = Ecto.Changeset.cast(%User{}, %{"status" => 3}, ~w(status))
+    %{errors: errors} = Ecto.Changeset.cast(%User{}, %{"status" => 3}, ~w(status)a)
     error = {:status, {"is invalid", [type: EctoEnum.PostgresTest.StatusEnum, validation: :cast]}}
     assert error in errors
 
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => "active"}, ~w(status)a)
     assert changes.status == :active
 
-    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status))
+    %{changes: changes} = Ecto.Changeset.cast(%User{}, %{"status" => :inactive}, ~w(status)a)
     assert changes.status == :inactive
   end
 
   test "raises when input is not in the enum map" do
     error = {:status, {"is invalid", [type: EctoEnum.PostgresTest.StatusEnum, validation: :cast]}}
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => "retroactive"}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => "retroactive"}, ~w(status)a)
     assert error in changeset.errors
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => :retroactive}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => :retroactive}, ~w(status)a)
     assert error in changeset.errors
 
-    changeset = Ecto.Changeset.cast(%User{}, %{"status" => 4}, ~w(status))
+    changeset = Ecto.Changeset.cast(%User{}, %{"status" => 4}, ~w(status)a)
     assert error in changeset.errors
 
     assert_raise Ecto.ChangeError, fn ->
