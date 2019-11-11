@@ -50,6 +50,7 @@ defmodule EctoEnum.Use do
 
       for {key, value} <- opts do
         def load(unquote(value)), do: {:ok, unquote(key)}
+        def load(unquote(Atom.to_string(key))), do: {:ok, unquote(key)}
       end
 
       def valid_value?(value) do
