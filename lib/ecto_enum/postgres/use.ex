@@ -9,7 +9,9 @@ defmodule EctoEnum.Postgres.Use do
 
       @behaviour Ecto.Type
 
-      @type t :: unquote(typespec)
+      if typespec do
+        @type t :: unquote(typespec)
+      end
 
       enums = input[:enums]
       valid_values = enums ++ Enum.map(enums, &Atom.to_string/1)
@@ -48,6 +50,8 @@ defmodule EctoEnum.Postgres.Use do
         def load(unquote(atom)), do: {:ok, unquote(atom)}
         def load(unquote(string)), do: {:ok, unquote(atom)}
       end
+
+      def load(_), do: :error
 
       def valid_value?(value) do
         Enum.member?(unquote(valid_values), value)

@@ -287,6 +287,18 @@ defmodule EctoEnumTest do
               ]}
   end
 
+  test "allow empty enums" do
+    require EctoEnum
+
+    EctoEnum.defenum(
+      Void,
+      :void,
+      []
+    )
+
+    assert Void.__enums__() == []
+  end
+
   def custom_error_msg(value) do
     "Value `#{inspect(value)}` is not a valid enum for `EctoEnumTest.StatusEnum`." <>
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
