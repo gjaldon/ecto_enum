@@ -292,3 +292,23 @@ defmodule EctoEnumTest do
       " Valid enums are `#{inspect(StatusEnum.__valid_values__())}`"
   end
 end
+
+defmodule ExternalEnum do
+  use EctoEnum, ready: 0, set: 1, go: 2
+end
+
+defmodule MacrosTest do
+  use ExUnit.Case
+
+  test "it inserts the enum value" do
+    require ExternalEnum
+    assert :ready == ExternalEnum.ready
+  end
+
+  test "it will validate non-existent values" do
+    require ExternalEnum
+    assert_raise(UndefinedFunctionError, fn ->
+      ExternalEnum.not_a_value
+    end)
+  end
+end

@@ -84,6 +84,16 @@ defmodule EctoEnum do
 
       iex> t(StatusEnum)
       @type t() :: :registered | :active | :inactive | :archived
+
+  Finally, Enums expose their values as 0-arity macros. This provides
+  call-site validation that the value being passed in is indeed a member
+  of the enum, while providing identical runtime behaviour to simply
+  using the atom directly.
+
+      iex> require StatusEnum
+      StatusEnum
+      iex> StatusEnum.registered
+      :registered
   """
 
   defmacro __using__(opts) do
