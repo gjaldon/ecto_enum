@@ -30,13 +30,12 @@ defmodule EctoEnum.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :ecto, :ecto_sql]]
+    []
   end
 
   defp deps do
     [
-      {:ecto, ">= 3.0.0"},
-      {:ecto_sql, "> 3.0.0"},
+      {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0", optional: true},
       {:mariaex, ">= 0.0.0", optional: true},
       {:ex_doc, "~> 0.19", only: [:docs, :dev]},
