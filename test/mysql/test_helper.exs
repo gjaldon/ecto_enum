@@ -11,17 +11,17 @@ Application.put_env(:ecto, TestRepo,
 )
 
 defmodule TestRepo do
-  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MySQL
+  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MyXQL
 end
 
 Application.put_env(:ecto, PoolRepo,
-  adapter: Ecto.Adapters.MySQL,
+  adapter: Ecto.Adapters.MyXQL,
   url: "ecto://root@localhost/ecto_test",
   pool_size: 10
 )
 
 defmodule PoolRepo do
-  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MySQL
+  use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.MyXQL
 
   def create_prefix(prefix) do
     "create database #{prefix}"
@@ -40,11 +40,11 @@ defmodule Ecto.Integration.Case do
   end
 end
 
-{:ok, _} = Ecto.Adapters.MySQL.ensure_all_started(TestRepo, :temporary)
+{:ok, _} = Ecto.Adapters.MyXQL.ensure_all_started(TestRepo, :temporary)
 
 # Load up the repository, start it, and run migrations
-_ = Ecto.Adapters.MySQL.storage_down(TestRepo.config())
-:ok = Ecto.Adapters.MySQL.storage_up(TestRepo.config())
+_ = Ecto.Adapters.MyXQL.storage_down(TestRepo.config())
+:ok = Ecto.Adapters.MyXQL.storage_up(TestRepo.config())
 
 {:ok, _pid} = TestRepo.start_link()
 # {:ok, _pid} = PoolRepo.start_link
