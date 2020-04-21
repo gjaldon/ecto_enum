@@ -68,6 +68,8 @@ defmodule EctoEnum.Postgres.Use do
       def schema, do: unquote(schema)
 
       types = Enum.map_join(enums, ", ", &"'#{&1}'")
+      alter_types_command = Enum.map_join(enums, "\n", &"ADD VALUE IF NOT EXISTS '#{&1}'")
+      alter_sql = "ALTER TYPE #{type} #{alter_types_command}"
       create_sql = "CREATE TYPE #{type} AS ENUM (#{types})"
       drop_sql = "DROP TYPE #{type}"
 
@@ -77,9 +79,17 @@ defmodule EctoEnum.Postgres.Use do
         def create_type() do
           Ecto.Migration.execute(unquote(create_sql), unquote(drop_sql))
         end
+
+        def alter_type() do
+          Ecto.Migration.execute(unquote(alter_sql))
+        end
       else
         def create_type() do
           Ecto.Migration.execute(unquote(create_sql))
+        end
+
+        def alter_type() do
+          Ecto.Migration.execute(unquote(alter_sql))
         end
       end
 
