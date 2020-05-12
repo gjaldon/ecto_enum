@@ -13,12 +13,16 @@ defmodule EctoEnum.Mixfile do
       test_paths: test_paths(Mix.env()),
       package: package(),
       name: "EctoEnum",
-      docs: [source_ref: "v#{@version}", source_url: "https://github.com/gjaldon/ecto_enum"]
+      docs: [source_ref: "v#{@version}", source_url: "https://github.com/gjaldon/ecto_enum"],
+      elixirc_paths: elixrc_paths(Mix.env())
     ]
   end
 
   defp test_paths(:mysql), do: ["test/mysql"]
   defp test_paths(_), do: ["test/pg"]
+
+  defp elixrc_paths(env) when env in ~w(mysql test)a, do: ["lib", "test/support"]
+  defp elixrc_paths(_), do: ["lib"]
 
   defp package do
     [
