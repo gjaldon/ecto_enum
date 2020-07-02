@@ -64,6 +64,18 @@ defmodule EctoEnum.Use do
         raise Ecto.ChangeError, message: msg
       end
 
+      for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
+        def dump!(unquote(k)), do: unquote(value)
+      end
+
+      def dump!(term) do
+        msg =
+          "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
+            "Valid enums are `#{inspect(__valid_values__())}`"
+
+        raise Ecto.ChangeError, message: msg
+      end
+
       def embed_as(_), do: :self
 
       def equal?(term1, term2), do: term1 == term2
