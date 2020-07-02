@@ -92,7 +92,7 @@ To `use` `EctoEnum` with string-backed storage:
 
 ```elixir
 defmodule CustomEnum do
-  use EctoEnum, "ready", "set", "go"
+  use EctoEnum, ["ready", "set", "go"]
 end
 ```
 
