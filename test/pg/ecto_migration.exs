@@ -43,6 +43,6 @@ defmodule Ecto.Integration.TestAlterEnumMigration do
   use Ecto.Migration
 
   def change do
-    TestEnum.alter_type()
+    TestEnum.add_values()
   end
 end
