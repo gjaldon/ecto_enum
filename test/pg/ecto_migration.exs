@@ -19,21 +19,30 @@ defmodule Ecto.Integration.SetupMigration do
 end
 
 import EctoEnum
+defenum(TestEnumOld, :role, [:admin, :user], schema: "other_schema")
 defenum(TestEnum, :role, [:admin, :manager, :user], schema: "other_schema")
 
 defmodule Ecto.Integration.TestEnumMigration do
   use Ecto.Migration
 
   def up do
-    TestEnum.create_type()
+    TestEnumOld.create_type()
 
     create table("users", prefix: "other_schema") do
-      add(:role, TestEnum.type())
+      add(:role, TestEnumOld.type())
     end
   end
 
   def down do
     drop(table("users", prefix: "other_schema"))
-    TestEnum.drop_type()
+    TestEnumOld.drop_type()
+  end
+end
+
+defmodule Ecto.Integration.TestAlterEnumMigration do
+  use Ecto.Migration
+
+  def change do
+    TestEnum.add_values()
   end
 end
