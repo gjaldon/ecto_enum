@@ -56,6 +56,10 @@ defmodule EctoEnum.Use do
         Enum.member?(@valid_values, value)
       end
 
+      for atom <- keys do
+        defmacro unquote(atom)(), do: unquote(atom)
+      end
+
       # # Reflection
       def __enum_map__(), do: unquote(opts)
       def __valid_values__(), do: @valid_values
