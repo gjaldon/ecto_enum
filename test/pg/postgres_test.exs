@@ -2,7 +2,7 @@ defmodule EctoEnum.PostgresTest do
   use ExUnit.Case, async: false
 
   import EctoEnum
-  defenum StatusEnum, :status, [:registered, :active, :inactive, :archived]
+  defenum StatusEnum, :status, [:registered, :active, :inactive, :archived, :"on-hold"]
 
   defmodule User do
     use Ecto.Schema
@@ -78,5 +78,33 @@ defmodule EctoEnum.PostgresTest do
     end
 
     assert NewType.cast("ready") == {:ok, :ready}
+  end
+
+  test "provides getter macros for the keys that match to values of enum" do
+    require StatusEnum
+
+    assert StatusEnum.registered() == :registered
+    assert StatusEnum.on_hold() == :"on-hold"
+  end
+
+  defmodule Light do
+    import EctoEnum
+
+    defenum(LightEnum, :traffic_light_enum, [:green, :red, :yellow])
+  end
+
+  defmodule Traffic do
+    require Light.LightEnum
+    def action(Light.LightEnum.green()), do: "go!"
+    def action(Light.LightEnum.red()), do: "stop!"
+    def action(Light.LightEnum.yellow()), do: "slow down!"
+  end
+
+  test "getter macros should work in pattern matches" do
+    require Light.LightEnum
+
+    assert Traffic.action(Light.LightEnum.green()) == "go!"
+    assert Traffic.action(Light.LightEnum.red()) == "stop!"
+    assert Traffic.action(Light.LightEnum.yellow()) == "slow down!"
   end
 end
