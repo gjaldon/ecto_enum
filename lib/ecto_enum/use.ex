@@ -5,6 +5,20 @@ defmodule EctoEnum.Use do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
+      [h | _t] = opts
+
+      opts =
+        cond do
+          Keyword.keyword?(opts) ->
+            opts
+
+          is_binary(h) ->
+            Enum.map(opts, fn value -> {String.to_atom(value), value} end)
+
+          true ->
+            raise "Enum must be a keyword list or a list of strings"
+        end
+
       typespec = Typespec.make(Keyword.keys(opts))
 
       @behaviour Ecto.Type
@@ -33,10 +47,28 @@ defmodule EctoEnum.Use do
       def cast(_other), do: :error
 
       for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
+        def cast!(unquote(k)), do: unquote(key)
+      end
+
+      def cast!(other), do: raise Ecto.CastError, type: __MODULE__, value: other
+
+      for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
         def dump(unquote(k)), do: {:ok, unquote(value)}
       end
 
       def dump(term) do
+        msg =
+          "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
+            "Valid enums are `#{inspect(__valid_values__())}`"
+
+        raise Ecto.ChangeError, message: msg
+      end
+
+      for {key, value} <- opts, k <- Enum.uniq([key, value, Atom.to_string(key)]) do
+        def dump!(unquote(k)), do: unquote(value)
+      end
+
+      def dump!(term) do
         msg =
           "Value `#{inspect(term)}` is not a valid enum for `#{inspect(__MODULE__)}`. " <>
             "Valid enums are `#{inspect(__valid_values__())}`"
