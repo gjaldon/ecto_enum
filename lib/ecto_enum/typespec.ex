@@ -1,6 +1,9 @@
 defmodule EctoEnum.Typespec do
   @moduledoc "Helper for generating enum typespecs"
 
+  def make([]), do: nil
+  def make(%{} = x) when map_size(x) == 0, do: nil
+
   def make(enums) do
     enums
     |> Enum.reverse()

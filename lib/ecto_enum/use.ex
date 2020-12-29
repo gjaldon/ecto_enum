@@ -9,7 +9,9 @@ defmodule EctoEnum.Use do
 
       @behaviour Ecto.Type
 
-      @type t :: unquote(typespec)
+      if typespec do
+        @type t :: unquote(typespec)
+      end
 
       keys = Keyword.keys(opts)
       string_keys = Enum.map(keys, &Atom.to_string/1)
@@ -51,6 +53,8 @@ defmodule EctoEnum.Use do
       for {key, value} <- opts do
         def load(unquote(value)), do: {:ok, unquote(key)}
       end
+
+      def load(_), do: :error
 
       def valid_value?(value) do
         Enum.member?(@valid_values, value)
