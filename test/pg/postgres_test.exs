@@ -12,8 +12,6 @@ defmodule EctoEnum.PostgresTest do
     end
   end
 
-  alias Ecto.Integration.TestRepo
-
   test "accepts atom and string on save" do
     user = TestRepo.insert!(%User{status: :registered})
     user = TestRepo.get(User, user.id)

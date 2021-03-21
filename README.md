@@ -1,16 +1,19 @@
 EctoEnum
 ========
 
-[![Hex.pm version](https://img.shields.io/hexpm/v/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
-[![Hex.pm downloads](https://img.shields.io/hexpm/dt/ecto_enum.svg?style=flat)](https://hex.pm/packages/ecto_enum)
-[![Inline docs](http://inch-ci.org/github/gjaldon/ecto_enum.svg?branch=master)](http://inch-ci.org/github/gjaldon/ecto_enum)
-[![Build Status](https://travis-ci.org/gjaldon/ecto_enum.svg?branch=master)](https://travis-ci.org/gjaldon/ecto_enum)
+[![Build Status](https://github.com/gjaldon/ecto_enum/workflows/CI/badge.svg)](https://github.com/gjaldon/ecto_enum/actions?query=workflow%3ACI)
+[![Version](https://img.shields.io/hexpm/v/ecto_enum.svg)](https://hex.pm/packages/ecto_enum)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ecto_enum/)
+[![Docs health](http://inch-ci.org/github/gjaldon/ecto_enum.svg?branch=master)](http://inch-ci.org/github/gjaldon/ecto_enum)
+[![Download](https://img.shields.io/hexpm/dt/ecto_enum.svg)](https://hex.pm/packages/ecto_enum)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Last Updated](https://img.shields.io/github/last-commit/gjaldon/ecto_enum.svg)](https://github.com/gjaldon/ecto_enum/commits/master)
 
 EctoEnum is an Ecto extension to support enums in your Ecto models.
 
-## Usage
+## Installation
 
-First, we add `ecto_enum` to `mix.exs`:
+Add `ecto_enum` to `mix.exs`:
 
 ```elixir
 def deps do
@@ -21,6 +24,8 @@ end
 ```
 
 Run `mix deps.get` to install `ecto_enum`.
+
+## Usage
 
 ### Creating an Ecto Enum with `defenum/2` macro
 

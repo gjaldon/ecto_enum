@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check_duplicate_runs:
+    name: Check for duplicate runs
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: always
+          cancel_others: true
+          skip_after_successful_duplicate: true
+          paths_ignore: '["**/README.md", "**/CHANGELOG.md", "**/LICENSE"]'
+          do_not_skip: '["pull_request"]'
+
+  test:
+    name: Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
+    runs-on: ubuntu-18.04
+    needs: check_duplicate_runs
+    if: ${{ needs.check_duplicate_runs.outputs.should_skip != 'true' }}
+
+    services:
+      postgres:
+        image: postgres:alpine
+        ports:
+        - 5432:5432
+        env:
+          POSTGRES_DB: ecto_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      mysql:
+        image: mysql
+        ports:
+        - 3306:3306
+        env:
+          MYSQL_DATABASE: ecto_test
+          MYSQL_ROOT_PASSWORD: root
+
+    strategy:
+      matrix:
+        elixir:
+        - '1.7.4'
+        - '1.8.2'
+        - '1.9.0'
+        - '1.10.4'
+        - '1.11.1'
+        otp:
+        - "20.0"
+        - "21.0"
+        - "22.0.2"
+        - '23.0'
+        exclude:
+        - elixir: "1.10.4"
+          otp: "20.0"
+        - elixir: "1.11.1"
+          otp: "20.0"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Elixir
+      uses: erlef/setup-elixir@v1
+      with:
+        elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
+
+    - name: Restore deps cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          deps
+          _build
+        key: ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-git-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}
+
+    - name: Install package dependencies
+      run: mix deps.get
+
+    - name: Remove compiled application files
+      run: mix clean
+
+    - name: Compile dependencies
+      run: mix compile
+      env:
+        MIX_ENV: test
+
+    - name: Run unit tests with Postgres
+      run: mix test
+
+    - name: Run unit tests with MySQL
+      run: mix test
+      env:
+        MIX_ENV: mysql
+
+  inch:
+    name: Analyse Documentation
+    runs-on: ubuntu-18.04
+    needs: test
+
+    strategy:
+      matrix:
+        elixir:
+        - "1.11"
+        otp:
+        - "23.0"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Elixir
+      uses: actions/setup-elixir@v1
+      with:
+        elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
+
+    - name: Restore deps cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          deps
+          _build
+        key: ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-git-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}
+
+    - name: Install package dependencies
+      run: mix deps.get
+
+    - name: Remove compiled application files
+      run: mix clean
+
+    - name: Compile dependencies
+      run: mix compile
+
+    - name: Check documentation quality locally
+      run: mix inch
+
+    - name: Report documentation quality
+      if: github.event_name == 'push'
+      run: mix inch.report

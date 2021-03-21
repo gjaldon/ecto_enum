@@ -17,8 +17,6 @@ defmodule EctoEnumTest do
     end
   end
 
-  alias Ecto.Integration.TestRepo
-
   test "accepts int, atom and string on save" do
     user = TestRepo.insert!(%User{status: 0})
     user = TestRepo.get(User, user.id)
