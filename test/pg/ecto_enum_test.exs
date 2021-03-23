@@ -3,8 +3,6 @@ Code.require_file("../ecto_enum_test.exs", __DIR__)
 defmodule EctoEnumPostgresTest do
   use ExUnit.Case, async: false
 
-  alias Ecto.Integration.TestRepo
-
   defmodule User do
     use Ecto.Schema
 

@@ -1,18 +1,18 @@
 Logger.configure(level: :info)
 ExUnit.start()
 
-alias Ecto.Integration.TestRepo
-
-Application.put_env(:ecto, TestRepo,
-  url: "ecto://postgres@localhost/ecto_test",
-  pool: Ecto.Adapters.SQL.Sandbox
-)
-
-defmodule Ecto.Integration.TestRepo do
+defmodule TestRepo do
   use Ecto.Repo, otp_app: :ecto, adapter: Ecto.Adapters.Postgres
 
   def log(_cmd), do: nil
 end
+
+Application.put_env(:ecto, TestRepo,
+  pool: Ecto.Adapters.SQL.Sandbox,
+  username: "postgres",
+  password: "postgres",
+  database: "ecto_test"
+)
 
 # Load up the repository, start it, and run migrations
 _ = Ecto.Adapters.Postgres.storage_down(TestRepo.config())
