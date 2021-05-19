@@ -74,11 +74,23 @@ defmodule EctoEnum do
       Valid enum values are `[0, 1, 2, 3, :registered, :active, :inactive, :archived, "active",
       "archived", "inactive", "registered"]`
 
-  The enum type `StatusEnum` will also have a reflection function for inspecting the
+  The enum type `StatusEnum` will also have reflection functions for inspecting the
   enum map in runtime.
 
       iex> StatusEnum.__enum_map__()
       [registered: 0, active: 1, inactive: 2, archived: 3]
+
+      iex> StatusEnum.__valid_values__()
+      [:registered, :active, :inactive, :archived, "registered", "active", "inactive", "archived", 0, 1, 2, 3]
+
+      iex> StatusEnum.__valid_values__(:atom)
+      [:registered, :active, :inactive, :archived]
+
+      iex> StatusEnum.__valid_values__(:string)
+      ["registered", "active", "inactive", "archived"]
+
+      iex> StatusEnum.__valid_values__(:integer)
+      [0, 1, 2, 3]
 
   Enums also generate a typespec for use with dialyzer, available as the `t()` type
 
