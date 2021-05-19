@@ -14,6 +14,9 @@ defmodule EctoEnum.Use do
       keys = Keyword.keys(opts)
       string_keys = Enum.map(keys, &Atom.to_string/1)
       @valid_values Enum.uniq(keys ++ string_keys ++ Keyword.values(opts))
+      @valid_string_values Enum.filter(@valid_values, &is_binary/1)
+      @valid_atom_values Enum.filter(@valid_values, &is_atom/1)
+      @valid_integer_values Enum.filter(@valid_values, &is_integer/1)
 
       {_key, value} = opts |> hd()
 
@@ -59,6 +62,9 @@ defmodule EctoEnum.Use do
       # # Reflection
       def __enum_map__(), do: unquote(opts)
       def __valid_values__(), do: @valid_values
+      def __valid_values__(:atom), do: @valid_atom_values
+      def __valid_values__(:string), do: @valid_string_values
+      def __valid_values__(:integer), do: @valid_integer_values
     end
   end
 end

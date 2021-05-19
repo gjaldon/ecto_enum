@@ -12,7 +12,8 @@ defmodule EctoEnum.Postgres.Use do
       @type t :: unquote(typespec)
 
       enums = input[:enums]
-      valid_values = enums ++ Enum.map(enums, &Atom.to_string/1)
+      string_values = Enum.map(enums, &Atom.to_string/1)
+      valid_values = enums ++ string_values
 
       for atom <- enums do
         string = Atom.to_string(atom)
@@ -57,6 +58,9 @@ defmodule EctoEnum.Postgres.Use do
       def __enums__(), do: unquote(enums)
       def __enum_map__(), do: __enums__()
       def __valid_values__(), do: unquote(valid_values)
+      def __valid_values__(:atom), do: unquote(enums)
+      def __valid_values__(:string), do: unquote(string_values)
+      def __valid_values__(:integer), do: []
 
       default_schema = "public"
       schema = Keyword.get(input, :schema, default_schema)

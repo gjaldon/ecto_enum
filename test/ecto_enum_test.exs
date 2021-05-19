@@ -105,6 +105,17 @@ defmodule EctoEnumTest do
     end
   end
 
+  test "reflection limited to types" do
+    expected_values = ["active", "archived", "inactive", "registered"]
+    assert Enum.sort(StatusEnum.__valid_values__(:string)) == expected_values
+
+    expected_values = [:active, :archived, :inactive, :registered]
+    assert Enum.sort(StatusEnum.__valid_values__(:atom)) == expected_values
+
+    expected_values = [0, 1, 2, 3]
+    assert Enum.sort(StatusEnum.__valid_values__(:integer)) == expected_values
+  end
+
   describe "validate_enum/3" do
     test "returns a valid changeset when using a valid field value" do
       changeset =
