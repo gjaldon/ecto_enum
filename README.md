@@ -6,6 +6,8 @@ EctoEnum
 [![Inline docs](http://inch-ci.org/github/gjaldon/ecto_enum.svg?branch=master)](http://inch-ci.org/github/gjaldon/ecto_enum)
 [![Build Status](https://travis-ci.org/gjaldon/ecto_enum.svg?branch=master)](https://travis-ci.org/gjaldon/ecto_enum)
 
+> **DEPRECATION NOTICE: This extension is no longer needed since Ecto 3.5+, which already supports enums.**
+
 EctoEnum is an Ecto extension to support enums in your Ecto models.
 
 ## Usage
