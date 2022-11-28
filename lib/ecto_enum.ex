@@ -105,14 +105,13 @@ defmodule EctoEnum do
   defmacro defenum(module, enum) do
     quote do
       enum = Macro.escape(unquote(enum))
-      [h | _t] = enum
 
       enum =
         cond do
           Keyword.keyword?(enum) ->
             enum
 
-          is_binary(h) ->
+          is_binary(List.first(enum)) ->
             Enum.map(enum, fn value -> {String.to_atom(value), value} end)
 
           true ->
